@@ -332,13 +332,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     calendarHTML += `
                         <div class="${classes}" data-date="${dayCount}" data-month="${currentMonth}" data-year="${currentYear}">
                             ${dayCount}
-                            <div class="payday-indicator"></div>
-                            <div class="payday-amount"></div>
-                            <div class="payday-note"></div>
-                            <div class="aish-indicator"></div>
-                            <div class="aish-amount"></div>
-                            ${isReportingStart ? '<div class="period-marker">Start</div>' : ''}
-                            ${isReportingEnd ? '<div class="period-marker">End</div>' : ''}
+                            <div class="payday-indicator" id="payday-${dayCount}"></div>
+                            <div class="payday-amount" id="payday-amount-${dayCount}"></div>
+                            <div class="payday-note" id="payday-note-${dayCount}"></div>
+                            <div class="aish-indicator" id="aish-${dayCount}"></div>
+                            <div class="aish-amount" id="aish-amount-${dayCount}"></div>
+                            ${isReportingStart ? '<div class="period-marker start-marker">Start</div>' : ''}
+                            ${isReportingEnd ? '<div class="period-marker end-marker">End</div>' : ''}
                         </div>
                     `;
                     dayCount++;
@@ -450,8 +450,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const addPaydayBtn = document.getElementById('add-payday-btn');
             const editButtons = document.getElementById('edit-buttons');
             const paydayAmountInput = document.getElementById('payday-amount');
-            const paydaySourceInput = document.getElementById('payday-source');
-            const paydayNotesInput = document.getElementById('payday-notes');
+            const paydayNoteInput = document.getElementById('payday-note');
             
             if (existingPayday) {
                 // Editing an existing payday
@@ -460,8 +459,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Fill form with existing data
                 if (paydayAmountInput) paydayAmountInput.value = existingPayday.amount || '';
-                if (paydaySourceInput) paydaySourceInput.value = existingPayday.source || '';
-                if (paydayNotesInput) paydayNotesInput.value = existingPayday.note || '';
+                if (paydayNoteInput) paydayNoteInput.value = existingPayday.note || '';
             } else {
                 // Adding a new payday
                 if (addPaydayBtn) addPaydayBtn.style.display = 'block';
@@ -469,8 +467,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Clear form fields
                 if (paydayAmountInput) paydayAmountInput.value = '';
-                if (paydaySourceInput) paydaySourceInput.value = '';
-                if (paydayNotesInput) paydayNotesInput.value = '';
+                if (paydayNoteInput) paydayNoteInput.value = '';
+            }
+            
+            // Also set the AISH payment date if that form exists
+            const aishDateInput = document.getElementById('aish-date');
+            if (aishDateInput) {
+                aishDateInput.value = formattedDate;
             }
         }
     }
@@ -924,9 +927,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Clear existing payday indicators from all calendar dates
         document.querySelectorAll('.calendar-date').forEach(dateElement => {
-            const paydayIndicator = dateElement.querySelector('.payday-indicator');
-            const paydayAmount = dateElement.querySelector('.payday-amount');
-            const paydayNote = dateElement.querySelector('.payday-note');
+            const day = dateElement.getAttribute('data-date');
+            const paydayIndicator = document.getElementById(`payday-${day}`);
+            const paydayAmount = document.getElementById(`payday-amount-${day}`);
+            const paydayNote = document.getElementById(`payday-note-${day}`);
             
             if (paydayIndicator) paydayIndicator.textContent = '';
             if (paydayAmount) paydayAmount.textContent = '';
@@ -944,33 +948,19 @@ document.addEventListener('DOMContentLoaded', function() {
             if (paydayData) {
                 console.log(`Adding payday for day ${day}:`, paydayData);
                 
-                // Get or create indicators
-                let paydayIndicator = dateElement.querySelector('.payday-indicator');
-                let paydayAmount = dateElement.querySelector('.payday-amount');
-                let paydayNote = dateElement.querySelector('.payday-note');
+                // Get indicators by ID
+                const paydayIndicator = document.getElementById(`payday-${day}`);
+                const paydayAmount = document.getElementById(`payday-amount-${day}`);
+                const paydayNote = document.getElementById(`payday-note-${day}`);
                 
-                // Create elements if they don't exist
-                if (!paydayIndicator) {
-                    paydayIndicator = document.createElement('div');
-                    paydayIndicator.className = 'payday-indicator';
-                    dateElement.appendChild(paydayIndicator);
+                // Update content if elements exist
+                if (paydayIndicator) {
+                    paydayIndicator.textContent = '💰';
                 }
                 
-                if (!paydayAmount) {
-                    paydayAmount = document.createElement('div');
-                    paydayAmount.className = 'payday-amount';
-                    dateElement.appendChild(paydayAmount);
+                if (paydayAmount) {
+                    paydayAmount.textContent = formatCurrency(paydayData.amount);
                 }
-                
-                if (!paydayNote && paydayData.note) {
-                    paydayNote = document.createElement('div');
-                    paydayNote.className = 'payday-note';
-                    dateElement.appendChild(paydayNote);
-                }
-                
-                // Update content
-                paydayIndicator.textContent = '💰';
-                paydayAmount.textContent = formatCurrency(paydayData.amount);
                 
                 if (paydayNote && paydayData.note) {
                     paydayNote.textContent = '📝';
@@ -1438,9 +1428,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const aishAmount = document.getElementById(`aish-amount-${day}`);
             const paymentData = monthPayments[day];
             
-            console.log(`Checking day ${day} for AISH indicator elements:`, 
-                        aishIndicator ? "Found indicator" : "Missing indicator", 
-                        aishAmount ? "Found amount" : "Missing amount");
+            console.log(`Processing AISH payment for day ${day}:`, paymentData);
             
             if (aishIndicator) {
                 // Add different emoji if there's an adjustment
@@ -1459,7 +1447,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 console.log("Added AISH indicator for day", day);
             } else {
-                console.log("Could not find AISH indicator for day", day);
+                console.error(`AISH indicator element not found for day ${day}`);
             }
             
             if (aishAmount) {
@@ -1473,14 +1461,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 console.log("Added AISH amount for day", day);
             } else {
-                console.log("Could not find AISH amount for day", day);
+                console.error(`AISH amount element not found for day ${day}`);
             }
         }
         
         // If there were issues with the AISH display, log the current calendar structure
         if (hasPayments) {
             console.log("Calendar structure for debugging:");
-            document.querySelectorAll('.calendar-date').forEach((el, i) => {
+            const calendarDates = document.getElementById('calendar-dates');
+            if (!calendarDates) {
+                console.error("Calendar dates container not found!");
+            } else {
+                console.log("Calendar dates container found:", calendarDates);
+            }
+            
+            document.querySelectorAll('.calendar-date').forEach((el) => {
                 const dateNum = el.getAttribute('data-date');
                 const hasAishIndicator = document.getElementById(`aish-${dateNum}`);
                 const hasAishAmount = document.getElementById(`aish-amount-${dateNum}`);
@@ -1735,8 +1730,51 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to force refresh the calendar
     function refreshCalendar() {
         console.log("Forcing calendar refresh");
+        
+        // Save current month and year
+        const monthDisplay = document.getElementById('current-month-display');
+        if (!monthDisplay) {
+            console.error("Month display not found");
+            return;
+        }
+        
+        const [monthName, yearStr] = monthDisplay.textContent.split(' ');
+        const currentMonth = getMonthNumber(monthName);
+        const currentYear = parseInt(yearStr);
+        
+        // Clear the calendar container to force a complete rebuild
+        const calendarContainer = document.getElementById('calendar-container');
+        if (!calendarContainer) {
+            console.error("Calendar container not found");
+            return;
+        }
+        
+        // Preserve the original HTML structure before the calendar-dates div
+        const calendarHeader = calendarContainer.querySelector('.calendar-header');
+        const monthSelector = calendarContainer.querySelector('.month-selector');
+        const calendarDaysContainer = calendarContainer.querySelector('.calendar-days');
+        
+        // Get the calendar div that contains the dates
+        const calendarDiv = calendarContainer.querySelector('.calendar');
+        if (!calendarDiv) {
+            console.error("Calendar div not found");
+            generateCalendar(); // Fall back to complete regeneration
+            return;
+        }
+        
+        // Only clear the calendar dates
+        const calendarDates = document.getElementById('calendar-dates');
+        if (calendarDates) {
+            calendarDates.innerHTML = '';
+        }
+        
+        // Regenerate the calendar
         generateCalendar();
-        alert("Calendar refreshed");
+        
+        console.log("Calendar refreshed successfully");
+        
+        // Show a brief notification
+        showSaveNotification("Calendar refreshed");
     }
     
     // Force reload the entire page
@@ -2249,8 +2287,15 @@ document.addEventListener('DOMContentLoaded', function() {
         fileInput.style.display = 'none';
         document.body.appendChild(fileInput);
         
-        // Add event listener to the original import button
+        // Add event listener to the import button (use the existing reference)
         if (importDataBtn) {
+            // Remove any existing listeners to avoid duplicates
+            const newImportBtn = importDataBtn.cloneNode(true);
+            importDataBtn.parentNode.replaceChild(newImportBtn, importDataBtn);
+            
+            // Update the global reference
+            importDataBtn = newImportBtn;
+            
             importDataBtn.addEventListener('click', function(e) {
                 // Show the normal import dialog
                 importData();

@@ -223,6 +223,8 @@ button:disabled {
     margin-bottom: 20px;
     overflow: visible;
     opacity: 1;
+    position: relative;
+    z-index: 1;
 }
 
 .calendar {
@@ -230,6 +232,8 @@ button:disabled {
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 20px;
+    display: grid;
+    grid-template-rows: auto 1fr;
 }
 
 .calendar-days {
@@ -237,6 +241,7 @@ button:disabled {
     grid-template-columns: repeat(7, 1fr);
     background-color: #f0f7ff;
     border-bottom: 1px solid #e0e0e0;
+    width: 100%;
 }
 
 .calendar-days div {
@@ -248,11 +253,13 @@ button:disabled {
 
 #calendar-dates {
     display: grid;
+    width: 100%;
 }
 
 .calendar-row {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
+    width: 100%;
 }
 
 .calendar-date {
@@ -262,6 +269,7 @@ button:disabled {
     border-right: 1px solid #e0e0e0;
     border-bottom: 1px solid #e0e0e0;
     text-align: right;
+    overflow: visible;
 }
 
 .calendar-date.current-month {
