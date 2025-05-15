@@ -14,6 +14,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const paydayTrackerBtn = document.getElementById('payday-tracker-btn');
     const calendarContainer = document.getElementById('calendar-container');
     
+    // Add event listener for Show/Hide Payday Tracker button
+    if (paydayTrackerBtn && calendarContainer) {
+        paydayTrackerBtn.addEventListener('click', function() {
+            if (calendarContainer.style.display === 'none' || !calendarContainer.style.display) {
+                calendarContainer.style.display = 'block';
+                paydayTrackerBtn.textContent = 'Hide Payday Tracker';
+                generateCalendar();
+            } else {
+                calendarContainer.style.display = 'none';
+                paydayTrackerBtn.textContent = 'Show Payday Tracker';
+            }
+        });
+    }
+    
     // Add adjustment factor
     let adjustmentFactor = 0;
     
