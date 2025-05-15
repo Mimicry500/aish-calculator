@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const copyDataBtn = document.getElementById('copy-data-btn');
     const exportDataArea = document.getElementById('export-data');
     const importDataArea = document.getElementById('import-data');
+    const importDataBtn = document.getElementById('import-data-btn');
     
     // Calendar navigation DOM elements
     const prevMonthBtn = document.getElementById('prev-month');
@@ -129,7 +130,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    const importDataBtn = document.getElementById('import-data-btn');
     if (importDataBtn) {
         importDataBtn.addEventListener('click', function() {
             importData();
@@ -153,9 +153,6 @@ document.addEventListener('DOMContentLoaded', function() {
             updateReportingPeriodSummary();
         }, 100);
     }
-    
-    // Add adjustment factor
-    let adjustmentFactor = 0;
     
     // AISH program constants - Updated with the correct values
     const AISH_MAX_BENEFIT = 1901; // Current monthly AISH benefit amount ($1,901)
@@ -270,31 +267,29 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log("Generating calendar for", getMonthName(currentMonth), currentYear);
         
-        // Create calendar header
-        let calendarHTML = `
-            <div class="calendar-header">
-                <h3>AISH Reporting Period Tracker (15th to 14th)</h3>
-                <p>Track your paychecks that fall within the AISH reporting period</p>
-            </div>
-            <div class="month-selector">
-                <button id="prev-month">&lt; Previous</button>
-                <span id="current-month-display">${getMonthName(currentMonth)} ${currentYear}</span>
-                <button id="next-month">Next &gt;</button>
-                <button id="refresh-calendar" class="refresh-btn">🔄 Refresh</button>
-                <button id="force-reload" class="reload-btn">⚡ Force Reload</button>
-            </div>
-            <div class="calendar">
-                <div class="calendar-days">
-                    <div>Sun</div>
-                    <div>Mon</div>
-                    <div>Tue</div>
-                    <div>Wed</div>
-                    <div>Thu</div>
-                    <div>Fri</div>
-                    <div>Sat</div>
-                </div>
-                <div class="calendar-dates" id="calendar-dates">
-        `;
+        // Find the calendar container
+        const calendarContainer = document.getElementById('calendar-container');
+        if (!calendarContainer) {
+            console.error("Calendar container not found!");
+            return;
+        }
+        
+        // Make sure calendar container is visible
+        calendarContainer.style.display = 'block';
+        calendarContainer.style.visibility = 'visible';
+        
+        // Update month display
+        const currentMonthDisplay = document.getElementById('current-month-display');
+        if (currentMonthDisplay) {
+            currentMonthDisplay.textContent = `${getMonthName(currentMonth)} ${currentYear}`;
+        }
+        
+        // Get calendar dates container
+        const calendarDates = document.getElementById('calendar-dates');
+        if (!calendarDates) {
+            console.error("Calendar dates container not found!");
+            return;
+        }
         
         // Get first day of month and number of days
         const firstDay = new Date(currentYear, currentMonth, 1).getDay();
@@ -302,6 +297,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Previous month's days
         const prevMonthDays = new Date(currentYear, currentMonth, 0).getDate();
+        
+        let calendarHTML = '';
         
         // Create calendar days
         let dayCount = 1;
@@ -335,13 +332,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     calendarHTML += `
                         <div class="${classes}" data-date="${dayCount}" data-month="${currentMonth}" data-year="${currentYear}">
                             ${dayCount}
-                            <div class="payday-indicator" id="payday-${dayCount}"></div>
-                            <div class="payday-amount" id="payday-amount-${dayCount}"></div>
-                            <div class="payday-note" id="payday-note-${dayCount}"></div>
-                            <div class="aish-indicator" id="aish-${dayCount}"></div>
-                            <div class="aish-amount" id="aish-amount-${dayCount}"></div>
-                            ${isReportingStart ? '<div class="period-marker start-marker">Start</div>' : ''}
-                            ${isReportingEnd ? '<div class="period-marker end-marker">End</div>' : ''}
+                            <div class="payday-indicator"></div>
+                            <div class="payday-amount"></div>
+                            <div class="payday-note"></div>
+                            <div class="aish-indicator"></div>
+                            <div class="aish-amount"></div>
+                            ${isReportingStart ? '<div class="period-marker">Start</div>' : ''}
+                            ${isReportingEnd ? '<div class="period-marker">End</div>' : ''}
                         </div>
                     `;
                     dayCount++;
@@ -354,167 +351,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (dayCount > daysInMonth && i >= 4) break;
         }
         
-        calendarHTML += `
-                </div>
-            </div>
-            <div class="payday-form">
-                <h4>Add a Payday</h4>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="payday-date">Date:</label>
-                        <input type="date" id="payday-date">
-                    </div>
-                    <div class="form-group">
-                        <label for="payday-amount">Amount ($):</label>
-                        <input type="number" id="payday-amount" min="0" step="0.01">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group full-width">
-                        <label for="payday-note">Note:</label>
-                        <input type="text" id="payday-note" placeholder="Optional note (e.g., Job name, hours worked)">
-                    </div>
-                </div>
-                <div class="form-buttons">
-                    <button id="add-payday-btn">Add Payday</button>
-                    <button id="edit-payday-btn" disabled>Update Payday</button>
-                    <button id="remove-payday-btn" disabled>Remove Payday</button>
-                    <button id="clear-form-btn">Clear Form</button>
-                </div>
-                <div class="clear-all-container">
-                    <button id="clear-all-btn" class="clear-all-btn">Clear All Paydays</button>
-                </div>
-            </div>
-            
-            <div class="aish-payment-form">
-                <h4>Record Actual AISH Payment</h4>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="aish-payment-date">Payment Date:</label>
-                        <input type="date" id="aish-payment-date">
-                    </div>
-                    <div class="form-group">
-                        <label for="aish-payment-amount">Actual Amount Received ($):</label>
-                        <input type="number" id="aish-payment-amount" min="0" step="0.01">
-                    </div>
-                </div>
-                <div id="per-payment-adjustment" class="adjustment-info" style="display:none;"></div>
-                <div class="form-buttons">
-                    <button id="add-aish-payment-btn">Record AISH Payment</button>
-                    <button id="remove-aish-payment-btn" disabled>Remove Payment</button>
-                </div>
-                <div class="clear-all-container">
-                    <button id="clear-all-aish-btn" class="clear-all-btn">Clear All AISH Payments</button>
-                </div>
-            </div>
-            
-            <div class="adjustment-factor-section">
-                <h4>Adjustment Factor Calibration</h4>
-                <p>If you notice the calculator consistently predicts a different amount than what you actually receive, use this to adjust the calculation.</p>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="adjustment-factor">Adjustment Amount ($):</label>
-                        <input type="number" id="adjustment-factor" value="${adjustmentFactor}" step="0.01">
-                    </div>
-                    <div class="form-group" style="align-self: flex-end;">
-                        <button id="apply-adjustment-btn">Apply Adjustment</button>
-                    </div>
-                </div>
-                <div class="learning-status">
-                    <p class="adjustment-note">This will adjust future calculations by the specified amount.</p>
-                    <p class="data-points">Data points: <span id="adjustment-count">0</span></p>
-                </div>
-            </div>
-            
-            <div class="adjustment-history-section">
-                <h4>Adjustment History</h4>
-                <button id="show-history-btn">Show History</button>
-                <div id="adjustment-history" class="adjustment-history" style="display:none;">
-                    <p class="loading-text">Loading history...</p>
-                </div>
-            </div>
-            
-            <div class="reporting-period-summary">
-                <h4>Current Reporting Period Summary (15th of Previous Month to 14th of Current)</h4>
-                <div class="summary-item">
-                    <span>Total Income This Period:</span>
-                    <span id="period-income">$0.00</span>
-                </div>
-                <div class="summary-item">
-                    <span>Estimated AISH Benefit:</span>
-                    <span id="period-aish">$0.00</span>
-                </div>
-                <div class="summary-item">
-                    <span>With Adjustment Factor:</span>
-                    <span id="period-aish-adjusted">$0.00</span>
-                </div>
-            </div>
-            
-            <div class="data-management-section">
-                <h4>Data Management</h4>
-                <p>Your data is automatically saved in your browser. You can also manage it manually.</p>
-                
-                <div class="data-management-buttons">
-                    <button id="export-data-btn">Export All Data</button>
-                    <button id="import-data-btn">Import Data</button>
-                    <button id="clear-data-btn" class="danger-btn">Clear All Data</button>
-                </div>
-                <div class="data-export-area" style="display:none;">
-                    <textarea id="export-data-text" readonly></textarea>
-                    <button id="copy-data-btn">Copy to Clipboard</button>
-                    <button id="close-export-btn">Close</button>
-                </div>
-                <div class="data-import-area" style="display:none;">
-                    <p>Paste your previously exported data here:</p>
-                    <textarea id="import-data-text" placeholder="Paste JSON data here..."></textarea>
-                    <button id="apply-import-btn">Import Data</button>
-                    <button id="cancel-import-btn">Cancel</button>
-                </div>
-                <p class="data-note">All data is stored locally on your device for privacy.</p>
-            </div>
-        `;
-        
-        // Set calendar HTML
-        calendarContainer.innerHTML = calendarHTML;
-        
-        // Add event listeners for calendar controls
-        document.getElementById('prev-month').addEventListener('click', () => changeMonth(-1));
-        document.getElementById('next-month').addEventListener('click', () => changeMonth(1));
-        document.getElementById('refresh-calendar').addEventListener('click', refreshCalendar);
-        document.getElementById('force-reload').addEventListener('click', forceReloadPage);
-        document.getElementById('add-payday-btn').addEventListener('click', addPayday);
-        document.getElementById('edit-payday-btn').addEventListener('click', updatePayday);
-        document.getElementById('remove-payday-btn').addEventListener('click', removePayday);
-        document.getElementById('clear-form-btn').addEventListener('click', clearPaydayForm);
-        
-        document.getElementById('clear-all-btn').addEventListener('click', clearAllPaydays);
-        document.getElementById('clear-all-aish-btn').addEventListener('click', clearAllAishPayments);
-        
-        // Add button for data point manager
-        const dataManagementSection = document.querySelector('.data-management-section');
-        if (dataManagementSection) {
-            // Add a data point manager button
-            const dataPointManagerBtn = document.createElement('button');
-            dataPointManagerBtn.id = 'data-point-manager-btn';
-            dataPointManagerBtn.className = 'data-point-btn';
-            dataPointManagerBtn.textContent = 'Manage Individual Data Points';
-            dataPointManagerBtn.addEventListener('click', openDataPointManager);
-            
-            // Add to the data management buttons
-            const dataManagementButtons = dataManagementSection.querySelector('.data-management-buttons');
-            if (dataManagementButtons) {
-                dataManagementButtons.appendChild(dataPointManagerBtn);
-            }
-        }
-        
-        // Add event listeners for data management
-        document.getElementById('export-data-btn').addEventListener('click', exportAllData);
-        document.getElementById('import-data-btn').addEventListener('click', importData);
-        document.getElementById('clear-data-btn').addEventListener('click', clearAllData);
-        document.getElementById('copy-data-btn').addEventListener('click', copyExportData);
-        document.getElementById('close-export-btn').addEventListener('click', closeExportArea);
-        document.getElementById('apply-import-btn').addEventListener('click', applyImportedData);
-        document.getElementById('cancel-import-btn').addEventListener('click', cancelImport);
+        // Update calendar with generated HTML
+        calendarDates.innerHTML = calendarHTML;
         
         // Add event listeners to calendar dates for selecting days
         document.querySelectorAll('.calendar-date.current-month').forEach(dateElement => {
@@ -523,42 +361,56 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        // Add event listeners for AISH payment tracking
-        document.getElementById('add-aish-payment-btn').addEventListener('click', addAishPayment);
-        document.getElementById('remove-aish-payment-btn').addEventListener('click', removeAishPayment);
-        document.getElementById('apply-adjustment-btn').addEventListener('click', applyAdjustmentFactor);
+        // Set up event listeners for navigation buttons if they don't already exist
+        const prevMonthBtn = document.getElementById('prev-month');
+        const nextMonthBtn = document.getElementById('next-month');
+        const refreshBtn = document.getElementById('refresh-calendar');
         
-        // Load saved paydays
-        loadPaydays();
-        
-        // Load AISH payments
-        try {
-            if (typeof loadAishPayments === 'function') {
-                loadAishPayments();
-                console.log("AISH payments loaded");
-            } else {
-                console.log("loadAishPayments function not available");
-            }
-        } catch (error) {
-            console.error("Error loading AISH payments:", error);
+        if (prevMonthBtn) {
+            // Remove existing event listeners to prevent duplicates
+            const newPrevBtn = prevMonthBtn.cloneNode(true);
+            prevMonthBtn.parentNode.replaceChild(newPrevBtn, prevMonthBtn);
+            newPrevBtn.addEventListener('click', function() {
+                changeMonth(-1);
+            });
         }
         
-        // Load adjustment factor from localStorage
-        loadAdjustmentFactor();
+        if (nextMonthBtn) {
+            // Remove existing event listeners to prevent duplicates
+            const newNextBtn = nextMonthBtn.cloneNode(true);
+            nextMonthBtn.parentNode.replaceChild(newNextBtn, nextMonthBtn);
+            newNextBtn.addEventListener('click', function() {
+                changeMonth(1);
+            });
+        }
         
-        // Update learning status
-        updateLearningStatus();
-        document.getElementById('adjustment-count').textContent = localStorage.getItem('adjustmentCount') || '0';
+        if (refreshBtn) {
+            // Remove existing event listeners to prevent duplicates
+            const newRefreshBtn = refreshBtn.cloneNode(true);
+            refreshBtn.parentNode.replaceChild(newRefreshBtn, refreshBtn);
+            newRefreshBtn.addEventListener('click', function() {
+                refreshCalendar();
+            });
+        }
         
-        // Update reporting period summary
-        updateReportingPeriodSummary();
+        // Load paydays and AISH payments
+        setTimeout(() => {
+            try {
+                loadPaydays();
+                loadAishPayments();
+                updateReportingPeriodSummary();
+            } catch (error) {
+                console.error("Error loading calendar data:", error);
+            }
+        }, 100);
         
-        // Ensure the buttons work correctly after calendar is generated
-        console.log("Calendar generated, event listeners added");
+        console.log("Calendar generation complete");
     }
     
     // Select a date from the calendar
     function selectCalendarDate(dateElement) {
+        console.log("Selecting calendar date:", dateElement);
+        
         // Clear previous selections
         document.querySelectorAll('.calendar-date.selected').forEach(el => {
             el.classList.remove('selected');
@@ -1068,13 +920,31 @@ document.addEventListener('DOMContentLoaded', function() {
         const monthKey = `${year}-${month}`;
         const monthPaydays = paydays[monthKey] || {};
         
-        // Add payday indicators to the current day elements on the calendar
+        console.log("Found paydays for month:", Object.keys(monthPaydays).length);
+        
+        // Clear existing payday indicators from all calendar dates
+        document.querySelectorAll('.calendar-date').forEach(dateElement => {
+            const paydayIndicator = dateElement.querySelector('.payday-indicator');
+            const paydayAmount = dateElement.querySelector('.payday-amount');
+            const paydayNote = dateElement.querySelector('.payday-note');
+            
+            if (paydayIndicator) paydayIndicator.textContent = '';
+            if (paydayAmount) paydayAmount.textContent = '';
+            if (paydayNote) {
+                paydayNote.textContent = '';
+                paydayNote.setAttribute('title', '');
+            }
+        });
+        
+        // Add payday indicators to the current month days
         document.querySelectorAll('.calendar-date.current-month').forEach(dateElement => {
             const day = dateElement.getAttribute('data-date');
             const paydayData = monthPaydays[day];
             
             if (paydayData) {
-                // Create or get indicators
+                console.log(`Adding payday for day ${day}:`, paydayData);
+                
+                // Get or create indicators
                 let paydayIndicator = dateElement.querySelector('.payday-indicator');
                 let paydayAmount = dateElement.querySelector('.payday-amount');
                 let paydayNote = dateElement.querySelector('.payday-note');
@@ -1100,22 +970,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Update content
                 paydayIndicator.textContent = '💰';
-                paydayIndicator.classList.add('has-payday');
                 paydayAmount.textContent = formatCurrency(paydayData.amount);
                 
                 if (paydayNote && paydayData.note) {
                     paydayNote.textContent = '📝';
                     paydayNote.setAttribute('title', paydayData.note);
                 }
-                
-                console.log("Added payday to calendar for day", day);
             }
         });
         
         // Update reporting period summary
-        updateReportingPeriodSummary();
-        
-        console.log("Paydays loaded for", monthName, year);
+        try {
+            updateReportingPeriodSummary();
+        } catch (error) {
+            console.error("Error updating reporting period summary:", error);
+        }
     }
     
     // Update reporting period summary
@@ -2372,9 +2241,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Add file upload option for import
-    const importDataBtn = document.getElementById('import-data-btn');
-    if (importDataBtn) {
-        // Create file input element
+    function setupFileUpload() {
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.id = 'file-upload';
@@ -2383,37 +2250,42 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.appendChild(fileInput);
         
         // Add event listener to the original import button
-        importDataBtn.addEventListener('click', function(e) {
-            // Show the normal import dialog
-            importData();
-            
-            // Add file upload button if it doesn't exist
-            const importArea = document.querySelector('.data-import-area');
-            if (!document.getElementById('file-upload-btn')) {
-                const uploadBtn = document.createElement('button');
-                uploadBtn.id = 'file-upload-btn';
-                uploadBtn.textContent = 'Import from File';
-                uploadBtn.className = 'upload-btn';
-                uploadBtn.addEventListener('click', function() {
-                    fileInput.click();
-                });
+        if (importDataBtn) {
+            importDataBtn.addEventListener('click', function(e) {
+                // Show the normal import dialog
+                importData();
                 
-                // Add before the Cancel button
-                importArea.insertBefore(uploadBtn, document.getElementById('cancel-import-btn'));
-            }
-        });
-        
-        // Handle file selection
-        fileInput.addEventListener('change', function(e) {
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('import-data-text').value = e.target.result;
-                };
-                reader.readAsText(this.files[0]);
-            }
-        });
+                // Add file upload button if it doesn't exist
+                const importArea = document.querySelector('.data-import-area');
+                if (!document.getElementById('file-upload-btn')) {
+                    const uploadBtn = document.createElement('button');
+                    uploadBtn.id = 'file-upload-btn';
+                    uploadBtn.textContent = 'Import from File';
+                    uploadBtn.className = 'upload-btn';
+                    uploadBtn.addEventListener('click', function() {
+                        fileInput.click();
+                    });
+                    
+                    // Add before the Cancel button
+                    importArea.insertBefore(uploadBtn, document.getElementById('cancel-import-btn'));
+                }
+            });
+            
+            // Handle file selection
+            fileInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('import-data-text').value = e.target.result;
+                    };
+                    reader.readAsText(this.files[0]);
+                }
+            });
+        }
     }
+
+    // Call the setup function after DOM is loaded
+    setupFileUpload();
 
     // Function to clear all AISH payments
     function clearAllAishPayments() {

@@ -212,175 +212,139 @@ button:disabled {
     padding: 5px 0;
 }
 
-/* Calendar Styles */
+/* Calendar fixes and improvements */
 #calendar-container {
+    display: block !important;
+    visibility: visible !important;
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    padding: 25px;
-    margin-bottom: 30px;
+    padding: 20px;
+    margin-bottom: 20px;
+    overflow: visible;
+    opacity: 1;
 }
 
-.calendar-header {
-    text-align: center;
+.calendar {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
     margin-bottom: 20px;
 }
 
-.calendar-header h3 {
-    margin-top: 0;
-    border-bottom: none;
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background-color: #f0f7ff;
+    border-bottom: 1px solid #e0e0e0;
 }
 
-.calendar-header p {
-    color: #666;
-    font-size: 0.9rem;
+.calendar-days div {
+    text-align: center;
+    padding: 10px;
+    font-weight: 600;
+    color: #0056b3;
+}
+
+#calendar-dates {
+    display: grid;
+}
+
+.calendar-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar-date {
+    position: relative;
+    height: 80px;
+    padding: 5px;
+    border-right: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: right;
+}
+
+.calendar-date.current-month {
+    cursor: pointer;
+}
+
+.calendar-date.current-month:hover {
+    background-color: #f0f7ff;
+}
+
+.calendar-date:nth-child(7n) {
+    border-right: none;
+}
+
+.calendar-row:last-child .calendar-date {
+    border-bottom: none;
 }
 
 .month-selector {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    background-color: var(--primary-color);
-    color: white;
+    margin-bottom: 15px;
 }
 
 .month-selector button {
-    background-color: transparent;
-    border: none;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    padding: 5px 10px;
+    width: auto;
+    padding: 8px 15px;
+    margin: 0;
 }
 
-.month-selector button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: var(--border-radius);
+#current-month-display {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #0056b3;
 }
 
-.current-month-display {
-    font-weight: bold;
-    font-size: 18px;
-}
-
-.calendar {
-    width: 100%;
-    margin-top: 20px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-}
-
-.calendar-days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    background-color: var(--secondary-color);
-    border-bottom: 1px solid var(--border-color);
-}
-
-.calendar-days div {
-    text-align: center;
-    padding: 10px;
-    font-weight: bold;
-}
-
-.calendar-dates {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-}
-
-.calendar-row {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    border-bottom: 1px solid var(--border-color);
-}
-
-.calendar-date {
-    position: relative;
-    min-height: 80px;
-    padding: 5px;
-    text-align: right;
-    border-right: 1px solid var(--border-color);
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.calendar-date:hover {
-    background-color: var(--hover-color);
-}
-
-.calendar-date.selected {
-    background-color: rgba(var(--primary-rgb), 0.1);
-    border: 2px solid var(--primary-color);
-}
-
-.calendar-date.prev-month,
-.calendar-date.next-month {
-    color: #aaa;
-    background-color: #f9f9f9;
-}
-
-.calendar-date.today {
-    background-color: rgba(var(--primary-rgb), 0.05);
-    font-weight: bold;
-}
-
-.calendar-date.reporting-start,
-.calendar-date.reporting-end {
-    background-color: rgba(var(--accent-rgb), 0.1);
-}
-
-.period-marker {
+/* Calendar date indicators */
+.payday-indicator, .aish-indicator {
     position: absolute;
-    top: 0;
-    left: 0;
-    background-color: var(--accent-color);
-    color: white;
-    font-size: 10px;
-    padding: 2px 4px;
-    border-bottom-right-radius: var(--border-radius);
-}
-
-.payday-indicator {
-    position: absolute;
-    top: 25px;
+    top: 5px;
     left: 5px;
     font-size: 16px;
 }
 
-.payday-amount {
+.payday-amount, .aish-amount {
     position: absolute;
-    top: 45px;
+    bottom: 20px;
     left: 5px;
     font-size: 12px;
-    color: var(--success-color);
-    font-weight: bold;
+    color: #0056b3;
+    font-weight: 600;
 }
 
 .payday-note {
     position: absolute;
     bottom: 5px;
-    right: 5px;
-    font-size: 12px;
-    color: var(--text-color);
-    cursor: help;
+    left: 5px;
+    font-size: 10px;
+    color: #666;
 }
 
-.aish-indicator {
-    position: absolute;
-    top: 25px;
-    right: 5px;
-    font-size: 16px;
+/* Calendar date states */
+.prev-month, .next-month {
+    color: #ccc;
+    background-color: #f9f9f9;
 }
 
-.aish-amount {
-    position: absolute;
-    top: 45px;
-    right: 5px;
-    font-size: 12px;
-    color: var(--primary-color);
-    font-weight: bold;
+.current-month {
+    color: #333;
+}
+
+.today {
+    background-color: #e6f2ff;
+    font-weight: 600;
+}
+
+.reporting-start {
+    background-color: #d4edda;
+}
+
+.reporting-end {
+    background-color: #f8d7da;
 }
 
 /* Payday form styles */

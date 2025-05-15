@@ -505,11 +505,16 @@
             
             <p>Track your paydays to help predict AISH benefits based on your reporting period.</p>
             
-            <div id="calendar-container" style="display: block;">
+            <div id="calendar-container" style="display: block !important; visibility: visible !important;">
+                <div class="calendar-header">
+                    <h3>AISH Reporting Period Tracker (15th to 14th)</h3>
+                    <p>Track your paychecks that fall within the AISH reporting period</p>
+                </div>
                 <div class="month-selector">
                     <button id="prev-month">&lt; Previous</button>
                     <span id="current-month-display"></span>
                     <button id="next-month">Next &gt;</button>
+                    <button id="refresh-calendar" class="refresh-btn">🔄 Refresh</button>
                 </div>
                 
                 <div class="calendar">
@@ -526,44 +531,34 @@
                         <!-- Calendar will be populated by JS -->
                     </div>
                 </div>
-            </div>
-            
-            <div class="info-section">
-                <h3>Payday Information</h3>
-                <p>Click on a day in the calendar to add a payday.</p>
-            </div>
-            
-            <div id="payday-form" style="display: none;">
-                <h3>Add Payday</h3>
                 
-                <div class="form-group">
-                    <label for="payday-date">Date:</label>
-                    <input type="date" id="payday-date" class="full-width">
-                </div>
-                
-                <div class="form-group">
-                    <label for="payday-amount">Amount ($):</label>
-                    <input type="number" id="payday-amount" min="0" step="0.01" class="full-width">
-                </div>
-                
-                <div class="form-group">
-                    <label for="payday-source">Source:</label>
-                    <input type="text" id="payday-source" placeholder="Employer name" class="full-width">
-                </div>
-                
-                <div class="form-group">
-                    <label for="payday-notes">Notes:</label>
-                    <input type="text" id="payday-notes" placeholder="Optional notes" class="full-width">
-                </div>
-                
-                <div class="form-buttons">
-                    <button id="add-payday-btn">Add Payday</button>
-                    <button id="cancel-edit-btn">Cancel</button>
-                </div>
-                
-                <div class="form-buttons" id="edit-buttons" style="display: none;">
-                    <button id="edit-payday-btn">Update Payday</button>
-                    <button id="remove-payday-btn">Remove Payday</button>
+                <div id="payday-form" style="display: none;">
+                    <h3>Add Payday</h3>
+                    
+                    <div class="form-group">
+                        <label for="payday-date">Date:</label>
+                        <input type="date" id="payday-date" class="full-width">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="payday-amount">Amount ($):</label>
+                        <input type="number" id="payday-amount" min="0" step="0.01" class="full-width">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="payday-note">Note:</label>
+                        <input type="text" id="payday-note" placeholder="Optional notes" class="full-width">
+                    </div>
+                    
+                    <div class="form-buttons">
+                        <button id="add-payday-btn">Add Payday</button>
+                        <button id="cancel-edit-btn">Cancel</button>
+                    </div>
+                    
+                    <div class="form-buttons" id="edit-buttons" style="display: none;">
+                        <button id="edit-payday-btn">Update Payday</button>
+                        <button id="remove-payday-btn">Remove Payday</button>
+                    </div>
                 </div>
             </div>
         </div>
