@@ -11,8 +11,45 @@ document.addEventListener('DOMContentLoaded', function() {
     const netEffectDisplay = document.getElementById('net-effect-display');
     const aishBenefitDisplay = document.getElementById('aish-benefit-display');
     const totalIncomeDisplay = document.getElementById('total-income-display');
+    const resultsSection = document.getElementById('results-section');
     const paydayTrackerBtn = document.getElementById('payday-tracker-btn');
     const calendarContainer = document.getElementById('calendar-container');
+    
+    // Additional DOM elements for payday functionality
+    const addPaydayBtn = document.getElementById('add-payday-btn');
+    const editPaydayBtn = document.getElementById('edit-payday-btn');
+    const removePaydayBtn = document.getElementById('remove-payday-btn');
+    const clearFormBtn = document.getElementById('clear-form-btn');
+    const paydayForm = document.getElementById('payday-form');
+    const paydayDateInput = document.getElementById('payday-date');
+    const paydayAmountInput = document.getElementById('payday-amount');
+    const paydaySourceInput = document.getElementById('payday-source');
+    const paydayNotesInput = document.getElementById('payday-notes');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    const editButtons = document.getElementById('edit-buttons');
+    
+    // AISH Payment DOM elements
+    const aishDateInput = document.getElementById('aish-date');
+    const aishAmountInput = document.getElementById('aish-amount');
+    const aishNotesInput = document.getElementById('aish-notes');
+    const addAishBtn = document.getElementById('add-aish-btn');
+    const aishHistoryList = document.getElementById('aish-list');
+    
+    // Data management DOM elements
+    const exportDataBtn = document.getElementById('export-data-btn');
+    const copyDataBtn = document.getElementById('copy-data-btn');
+    const exportDataArea = document.getElementById('export-data');
+    const importDataArea = document.getElementById('import-data');
+    
+    // Calendar navigation DOM elements
+    const prevMonthBtn = document.getElementById('prev-month');
+    const nextMonthBtn = document.getElementById('next-month');
+    
+    // Global adjustment factor for AISH calculations (will be loaded from storage)
+    let adjustmentFactor = 0;
+    
+    // Load adjustment factor from storage
+    loadAdjustmentFactor();
     
     // Initialize calendar with payday tracker always visible
     if (calendarContainer) {
@@ -32,6 +69,89 @@ document.addEventListener('DOMContentLoaded', function() {
                 paydayTrackerBtn.textContent = 'Show Payday Tracker';
             }
         });
+    }
+    
+    // Set up event listeners for calendar features
+    if (prevMonthBtn) {
+        prevMonthBtn.addEventListener('click', function() {
+            changeMonth(-1);
+        });
+    }
+    
+    if (nextMonthBtn) {
+        nextMonthBtn.addEventListener('click', function() {
+            changeMonth(1);
+        });
+    }
+    
+    // Set up payday form event listeners
+    if (addPaydayBtn) {
+        addPaydayBtn.addEventListener('click', function() {
+            console.log("Add payday button clicked");
+            if (paydayForm && paydayForm.style.display !== 'none') {
+                addPayday();
+            }
+        });
+    }
+    
+    if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', function() {
+            if (paydayForm) {
+                paydayForm.style.display = 'none';
+                clearPaydayForm();
+            }
+        });
+    }
+    
+    if (editPaydayBtn) {
+        editPaydayBtn.addEventListener('click', function() {
+            updatePayday();
+        });
+    }
+    
+    if (removePaydayBtn) {
+        removePaydayBtn.addEventListener('click', function() {
+            removePayday();
+        });
+    }
+    
+    // AISH Payment event listeners
+    if (addAishBtn) {
+        addAishBtn.addEventListener('click', function() {
+            addAishPayment();
+        });
+    }
+    
+    // Data management event listeners
+    if (exportDataBtn) {
+        exportDataBtn.addEventListener('click', function() {
+            exportAllData();
+        });
+    }
+    
+    const importDataBtn = document.getElementById('import-data-btn');
+    if (importDataBtn) {
+        importDataBtn.addEventListener('click', function() {
+            importData();
+        });
+    }
+    
+    if (copyDataBtn) {
+        copyDataBtn.addEventListener('click', function() {
+            copyExportData();
+        });
+    }
+    
+    // Initialize calendar
+    if (calendarContainer) {
+        generateCalendar();
+        
+        // Force a reload of paydays and AISH payments
+        setTimeout(() => {
+            loadPaydays();
+            loadAishPayments();
+            updateReportingPeriodSummary();
+        }, 100);
     }
     
     // Add adjustment factor
@@ -439,92 +559,67 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Select a date from the calendar
     function selectCalendarDate(dateElement) {
-        // First remove selected class from any previously selected date
-        const selectedDates = document.querySelectorAll('.calendar-date.selected');
-        selectedDates.forEach(date => {
-            date.classList.remove('selected');
+        // Clear previous selections
+        document.querySelectorAll('.calendar-date.selected').forEach(el => {
+            el.classList.remove('selected');
         });
         
-        // Add selected class to this date
+        // Highlight the selected date
         dateElement.classList.add('selected');
         
-        // Get date information
         const day = dateElement.getAttribute('data-date');
         const month = dateElement.getAttribute('data-month');
         const year = dateElement.getAttribute('data-year');
         
-        // Create date object - Fix: Convert day to a number to prevent off-by-one error
-        const selectedDate = new Date(parseInt(year), parseInt(month), parseInt(day));
+        console.log("Selected date:", day, month, year);
         
-        // Format date for input field (YYYY-MM-DD)
-        const formattedDate = selectedDate.toISOString().split('T')[0];
+        // Format date for the input field (YYYY-MM-DD)
+        const formattedMonth = (parseInt(month) + 1).toString().padStart(2, '0');
+        const formattedDay = day.toString().padStart(2, '0');
+        const formattedDate = `${year}-${formattedMonth}-${formattedDay}`;
         
-        // Check if there's an AISH payment on this date
-        const aishPayments = JSON.parse(localStorage.getItem('aishPayments') || '{}');
-        const aishMonthKey = `${year}-${month}`;
-        const hasAishPayment = aishPayments[aishMonthKey] && aishPayments[aishMonthKey][day];
-        
-        // Check if there's a payday on this date
-        const paydays = JSON.parse(localStorage.getItem('paydays') || '{}');
-        const paydayMonthKey = `${year}-${month}`;
-        const hasPayday = paydays[paydayMonthKey] && paydays[paydayMonthKey][day];
-        
-        // Set date in both forms
-        document.getElementById('payday-date').value = formattedDate;
-        document.getElementById('aish-payment-date').value = formattedDate;
-        
-        if (hasAishPayment) {
-            // Fill in existing AISH payment details
-            document.getElementById('aish-payment-amount').value = aishPayments[aishMonthKey][day].amount;
-            document.getElementById('remove-aish-payment-btn').disabled = false;
+        // Show the payday form
+        const paydayForm = document.getElementById('payday-form');
+        if (paydayForm) {
+            paydayForm.style.display = 'block';
             
-            // Show adjustment information
-            const adjustmentInfo = document.getElementById('per-payment-adjustment');
-            if (adjustmentInfo && aishPayments[aishMonthKey][day].adjustment !== undefined) {
-                const adjustment = aishPayments[aishMonthKey][day].adjustment;
-                const adjustmentText = adjustment >= 0 ? 
-                    `+${formatCurrency(adjustment)}` : 
-                    formatCurrency(adjustment);
+            // Set the date in the form
+            const paydayDateInput = document.getElementById('payday-date');
+            if (paydayDateInput) {
+                paydayDateInput.value = formattedDate;
+            }
+            
+            // Check if there's an existing payday on this date
+            const paydays = JSON.parse(localStorage.getItem('paydays') || '{}');
+            const monthKey = `${year}-${month}`;
+            const existingPayday = paydays[monthKey] && paydays[monthKey][day];
+            
+            // Set up form for adding or editing
+            const addPaydayBtn = document.getElementById('add-payday-btn');
+            const editButtons = document.getElementById('edit-buttons');
+            const paydayAmountInput = document.getElementById('payday-amount');
+            const paydaySourceInput = document.getElementById('payday-source');
+            const paydayNotesInput = document.getElementById('payday-notes');
+            
+            if (existingPayday) {
+                // Editing an existing payday
+                if (addPaydayBtn) addPaydayBtn.style.display = 'none';
+                if (editButtons) editButtons.style.display = 'block';
                 
-                adjustmentInfo.textContent = `This payment's adjustment: ${adjustmentText}`;
-                adjustmentInfo.style.display = 'block';
+                // Fill form with existing data
+                if (paydayAmountInput) paydayAmountInput.value = existingPayday.amount || '';
+                if (paydaySourceInput) paydaySourceInput.value = existingPayday.source || '';
+                if (paydayNotesInput) paydayNotesInput.value = existingPayday.note || '';
+            } else {
+                // Adding a new payday
+                if (addPaydayBtn) addPaydayBtn.style.display = 'block';
+                if (editButtons) editButtons.style.display = 'none';
+                
+                // Clear form fields
+                if (paydayAmountInput) paydayAmountInput.value = '';
+                if (paydaySourceInput) paydaySourceInput.value = '';
+                if (paydayNotesInput) paydayNotesInput.value = '';
             }
-            
-            console.log("Existing AISH payment selected, remove button enabled");
-        } else {
-            // Clear AISH payment form
-            document.getElementById('aish-payment-amount').value = '';
-            document.getElementById('remove-aish-payment-btn').disabled = true;
-            
-            // Hide adjustment info
-            const adjustmentInfo = document.getElementById('per-payment-adjustment');
-            if (adjustmentInfo) {
-                adjustmentInfo.style.display = 'none';
-            }
-        }
-        
-        if (hasPayday) {
-            // Fill in existing payday details
-            document.getElementById('payday-amount').value = paydays[paydayMonthKey][day].amount;
-            document.getElementById('payday-note').value = paydays[paydayMonthKey][day].note || '';
-            
-            // Enable edit and remove buttons
-            document.getElementById('edit-payday-btn').disabled = false;
-            document.getElementById('remove-payday-btn').disabled = false;
-            document.getElementById('add-payday-btn').disabled = true;
-            
-            console.log("Existing payday selected, edit/remove buttons enabled");
-        } else {
-            // Clear payday form for new payday
-            document.getElementById('payday-amount').value = '';
-            document.getElementById('payday-note').value = '';
-            
-            // Disable edit and remove buttons
-            document.getElementById('edit-payday-btn').disabled = true;
-            document.getElementById('remove-payday-btn').disabled = true;
-            document.getElementById('add-payday-btn').disabled = false;
-            
-            console.log("No payday on this date, add button enabled");
         }
     }
     
@@ -771,11 +866,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update calendar
         loadPaydays();
         
-        // Clear form
+        // Update reporting period summary
+        updateReportingPeriodSummary();
+        
+        // Clear form and reset buttons
         clearPaydayForm();
         
-        // Save paydays with enhanced persistence
-        savePaydays();
+        // Show confirmation
+        alert(`Payday of ${formatCurrency(paydayAmount)} added to ${getMonthName(month)} ${day}, ${year}`);
         
         console.log("Payday added:", day, month, year, paydayAmount);
     }
@@ -815,11 +913,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update calendar
         loadPaydays();
         
-        // Clear form
+        // Update reporting period summary
+        updateReportingPeriodSummary();
+        
+        // Clear form and reset buttons
         clearPaydayForm();
         
-        // Save paydays with enhanced persistence
-        savePaydays();
+        // Show confirmation
+        alert(`Payday updated to ${formatCurrency(paydayAmount)} on ${getMonthName(month)} ${day}, ${year}`);
         
         console.log("Payday updated:", day, month, year, paydayAmount);
     }
@@ -952,6 +1053,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load saved paydays
     function loadPaydays() {
         const monthDisplay = document.getElementById('current-month-display');
+        if (!monthDisplay) {
+            console.error("Month display element not found");
+            return;
+        }
+        
         const [monthName, year] = monthDisplay.textContent.split(' ');
         const month = getMonthNumber(monthName);
         
@@ -962,58 +1068,49 @@ document.addEventListener('DOMContentLoaded', function() {
         const monthKey = `${year}-${month}`;
         const monthPaydays = paydays[monthKey] || {};
         
-        // AGGRESSIVELY clear all payday indicators first
-        for (let day = 1; day <= 31; day++) {
-            const paydayIndicator = document.getElementById(`payday-${day}`);
-            const paydayAmount = document.getElementById(`payday-amount-${day}`);
-            const paydayNote = document.getElementById(`payday-note-${day}`);
-            
-            if (paydayIndicator) {
-                paydayIndicator.innerHTML = '';
-                paydayIndicator.textContent = '';
-                paydayIndicator.classList.remove('has-payday');
-            }
-            
-            if (paydayAmount) {
-                paydayAmount.innerHTML = '';
-                paydayAmount.textContent = '';
-            }
-            
-            if (paydayNote) {
-                paydayNote.innerHTML = '';
-                paydayNote.textContent = '';
-                paydayNote.setAttribute('title', '');
-            }
-        }
-        
-        // Add payday indicators
-        for (const day in monthPaydays) {
-            const paydayIndicator = document.getElementById(`payday-${day}`);
-            const paydayAmount = document.getElementById(`payday-amount-${day}`);
-            const paydayNote = document.getElementById(`payday-note-${day}`);
+        // Add payday indicators to the current day elements on the calendar
+        document.querySelectorAll('.calendar-date.current-month').forEach(dateElement => {
+            const day = dateElement.getAttribute('data-date');
             const paydayData = monthPaydays[day];
             
-            if (paydayIndicator) {
+            if (paydayData) {
+                // Create or get indicators
+                let paydayIndicator = dateElement.querySelector('.payday-indicator');
+                let paydayAmount = dateElement.querySelector('.payday-amount');
+                let paydayNote = dateElement.querySelector('.payday-note');
+                
+                // Create elements if they don't exist
+                if (!paydayIndicator) {
+                    paydayIndicator = document.createElement('div');
+                    paydayIndicator.className = 'payday-indicator';
+                    dateElement.appendChild(paydayIndicator);
+                }
+                
+                if (!paydayAmount) {
+                    paydayAmount = document.createElement('div');
+                    paydayAmount.className = 'payday-amount';
+                    dateElement.appendChild(paydayAmount);
+                }
+                
+                if (!paydayNote && paydayData.note) {
+                    paydayNote = document.createElement('div');
+                    paydayNote.className = 'payday-note';
+                    dateElement.appendChild(paydayNote);
+                }
+                
+                // Update content
                 paydayIndicator.textContent = '💰';
                 paydayIndicator.classList.add('has-payday');
-                console.log("Added payday indicator for day", day);
-            } else {
-                console.log("Could not find payday indicator for day", day);
-            }
-            
-            if (paydayAmount) {
                 paydayAmount.textContent = formatCurrency(paydayData.amount);
-                console.log("Added payday amount for day", day);
-            } else {
-                console.log("Could not find payday amount for day", day);
+                
+                if (paydayNote && paydayData.note) {
+                    paydayNote.textContent = '📝';
+                    paydayNote.setAttribute('title', paydayData.note);
+                }
+                
+                console.log("Added payday to calendar for day", day);
             }
-            
-            if (paydayNote && paydayData.note) {
-                paydayNote.textContent = '📝';
-                paydayNote.setAttribute('title', paydayData.note);
-                console.log("Added payday note for day", day);
-            }
-        }
+        });
         
         // Update reporting period summary
         updateReportingPeriodSummary();
