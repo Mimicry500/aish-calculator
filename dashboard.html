@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AISH Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-lg);
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-lg);
+        }
+        
+        .dashboard-card {
+            background-color: var(--background-card);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            padding: var(--spacing-md);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .dashboard-card h3 {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+            color: var(--primary);
+        }
+        
+        .dashboard-card-content {
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .dashboard-card-footer {
+            text-align: right;
+        }
+        
+        .hero-section {
+            background-color: var(--primary);
+            color: white;
+            padding: var(--spacing-xl);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .hero-description {
+            font-size: 1.2rem;
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="container">
+            <h1 class="logo">AISH Calculator</h1>
+            <nav>
+                <ul class="main-nav">
+                    <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                    <li><a href="budget.html">Budget Manager</a></li>
+                    <li><a href="calculator.html">Income Calculator</a></li>
+                    <li><a href="test-storage.html">Test Storage</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="dashboard-container">
+        <section class="hero-section">
+            <h2 class="hero-title">Alberta AISH Calculator</h2>
+            <p class="hero-description">
+                Welcome to the Alberta AISH (Assured Income for the Severely Handicapped) Calculator - 
+                a tool designed to help beneficiaries manage their finances, track income, and plan their budget.
+            </p>
+        </section>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <h3>Budget Manager</h3>
+                <div class="dashboard-card-content">
+                    <p>Manage your monthly budget, track bills, and visualize your expenses with our interactive calendar.</p>
+                    <ul>
+                        <li>Track your AISH payments</li>
+                        <li>Manage recurring bills</li>
+                        <li>View monthly calendar with payment dates</li>
+                    </ul>
+                </div>
+                <div class="dashboard-card-footer">
+                    <a href="budget.html" class="btn primary-btn">Open Budget Manager</a>
+                </div>
+            </div>
+            
+            <div class="dashboard-card">
+                <h3>Income Calculator</h3>
+                <div class="dashboard-card-content">
+                    <p>Calculate how employment income affects your AISH benefits using our specialized calculator.</p>
+                    <ul>
+                        <li>Calculate net income after AISH deductions</li>
+                        <li>See how work affects your benefits</li>
+                        <li>Plan your employment income</li>
+                    </ul>
+                </div>
+                <div class="dashboard-card-footer">
+                    <a href="calculator.html" class="btn primary-btn">Open Income Calculator</a>
+                </div>
+            </div>
+            
+            <div class="dashboard-card">
+                <h3>Test Storage</h3>
+                <div class="dashboard-card-content">
+                    <p>Test how data storage works and experiment with saving your information locally.</p>
+                    <ul>
+                        <li>Test browser storage functionality</li>
+                        <li>Understand how your data is saved</li>
+                        <li>Verify data persistence</li>
+                    </ul>
+                </div>
+                <div class="dashboard-card-footer">
+                    <a href="test-storage.html" class="btn primary-btn">Open Test Storage</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="app-footer">
+        <div class="container">
+            <p>AISH Calculator - A tool for Alberta AISH beneficiaries</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html> 
