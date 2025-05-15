@@ -14,6 +14,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const paydayTrackerBtn = document.getElementById('payday-tracker-btn');
     const calendarContainer = document.getElementById('calendar-container');
     
+    // Initialize calendar with payday tracker always visible
+    if (calendarContainer) {
+        calendarContainer.style.display = 'block';
+        generateCalendar();
+    }
+    
     // Add event listener for Show/Hide Payday Tracker button
     if (paydayTrackerBtn && calendarContainer) {
         paydayTrackerBtn.addEventListener('click', function() {
@@ -617,34 +623,32 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 const viewState = JSON.parse(savedState);
                 
-                // If calendar was visible, show it
-                if (viewState.calendarVisible) {
-                    calendarContainer.style.display = 'block';
-                    if (paydayTrackerBtn) {
-                        paydayTrackerBtn.textContent = 'Hide Payday Tracker';
-                    }
+                // Always show the calendar regardless of saved state
+                calendarContainer.style.display = 'block';
+                if (paydayTrackerBtn) {
+                    paydayTrackerBtn.textContent = 'Hide Payday Tracker';
+                }
+                
+                // Generate calendar
+                generateCalendar();
+                
+                // Set to the saved month/year if available
+                if (viewState.currentMonthYear) {
+                    const currentMonthDisplay = document.getElementById('current-month-display');
+                    const [savedMonthName, savedYear] = viewState.currentMonthYear.split(' ');
+                    const [currentMonthName, currentYear] = currentMonthDisplay.textContent.split(' ');
                     
-                    // Generate calendar
-                    generateCalendar();
-                    
-                    // Set to the saved month/year if available
-                    if (viewState.currentMonthYear) {
-                        const currentMonthDisplay = document.getElementById('current-month-display');
-                        const [savedMonthName, savedYear] = viewState.currentMonthYear.split(' ');
-                        const [currentMonthName, currentYear] = currentMonthDisplay.textContent.split(' ');
+                    if (savedMonthName !== currentMonthName || savedYear !== currentYear) {
+                        // Navigate to the saved month
+                        currentMonthDisplay.textContent = viewState.currentMonthYear;
                         
-                        if (savedMonthName !== currentMonthName || savedYear !== currentYear) {
-                            // Navigate to the saved month
-                            currentMonthDisplay.textContent = viewState.currentMonthYear;
-                            
-                            const savedMonth = getMonthNumber(savedMonthName);
-                            const savedYearNum = parseInt(savedYear);
-                            
-                            // Regenerate calendar for the saved month/year
-                            updateCalendarDates(savedMonth, savedYearNum);
-                            loadPaydays();
-                            loadAishPayments();
-                        }
+                        const savedMonth = getMonthNumber(savedMonthName);
+                        const savedYearNum = parseInt(savedYear);
+                        
+                        // Regenerate calendar for the saved month/year
+                        updateCalendarDates(savedMonth, savedYearNum);
+                        loadPaydays();
+                        loadAishPayments();
                     }
                 }
                 
@@ -2009,13 +2013,14 @@ document.addEventListener('DOMContentLoaded', function() {
         aishBenefitDisplay.textContent = '$0.00';
         totalIncomeDisplay.textContent = '$0.00';
         
-        // Hide calendar if visible
+        // Keep calendar visible and regenerate it
         if (calendarContainer) {
-            calendarContainer.style.display = 'none';
+            calendarContainer.style.display = 'block';
+            generateCalendar();
         }
         
         if (paydayTrackerBtn) {
-            paydayTrackerBtn.textContent = 'Show Payday Tracker';
+            paydayTrackerBtn.textContent = 'Hide Payday Tracker';
         }
         
         // Reset adjustment factor
