@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alberta AISH Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .results {
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .result-label {
+            font-weight: bold;
+        }
+        .warning {
+            background-color: rgba(255, 152, 0, 0.1);
+            border-left: 5px solid var(--warning);
+            padding: var(--spacing-md);
+            margin: var(--spacing-lg) 0;
+            border-radius: var(--radius-sm);
+        }
+        .info-section {
+            background-color: rgba(33, 150, 243, 0.1);
+            border-left: 5px solid var(--info);
+            padding: var(--spacing-md);
+            margin: var(--spacing-lg) 0;
+            border-radius: var(--radius-sm);
+        }
+        .calendar {
+            margin-top: 20px;
+        }
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-weight: bold;
+            background-color: #f0f0f0;
+            padding: 10px 0;
+        }
+        .calendar-row {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+        .calendar-date {
+            height: 80px;
+            border: 1px solid #ddd;
+            padding: 5px;
+            text-align: right;
+            position: relative;
+            cursor: pointer;
+        }
+        .calendar-date:hover {
+            background-color: #f0f0f0;
+        }
+        .prev-month, .next-month {
+            color: #aaa;
+        }
+        .today {
+            background-color: #e3f2fd;
+        }
+        .reporting-start {
+            border-top: 3px solid var(--success);
+        }
+        .reporting-end {
+            border-bottom: 3px solid var(--danger);
+        }
+        .period-marker {
+            position: absolute;
+            bottom: 2px;
+            left: 2px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .start-marker {
+            color: var(--success);
+        }
+        .end-marker {
+            color: var(--danger);
+        }
+        .payday-indicator {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            font-size: 16px;
+        }
+        .payday-amount {
+            position: absolute;
+            bottom: 20px;
+            left: 5px;
+            font-size: 12px;
+            color: #2c3e50;
+        }
+        .payday-note {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+        .aish-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 16px;
+        }
+        .aish-amount {
+            position: absolute;
+            bottom: 20px;
+            right: 5px;
+            font-size: 12px;
+            color: #9b59b6;
+            font-weight: bold;
+        }
+        .month-selector {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .form-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+        .form-group {
+            flex: 1;
+        }
+        .full-width {
+            width: 100%;
+        }
+        .form-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-md);
+        }
+        #add-payday-btn {
+            background-color: var(--success);
+            grid-column: 1;
+        }
+        #add-payday-btn:hover {
+            background-color: var(--success);
+            filter: brightness(90%);
+        }
+        #edit-payday-btn {
+            background-color: var(--warning);
+            grid-column: 1;
+        }
+        #edit-payday-btn:hover {
+            background-color: var(--warning);
+            filter: brightness(90%);
+        }
+        #remove-payday-btn {
+            background-color: var(--danger);
+            grid-column: 2;
+        }
+        #remove-payday-btn:hover {
+            background-color: var(--danger);
+            filter: brightness(90%);
+        }
+        #cancel-edit-btn {
+            background-color: var(--text-secondary);
+            grid-column: 2;
+        }
+        #cancel-edit-btn:hover {
+            background-color: var(--text-secondary);
+            filter: brightness(90%);
+        }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .payday-form, .aish-payment-form, .adjustment-factor-section {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .payday-form h4, .aish-payment-form h4, .adjustment-factor-section h4 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .aish-payment-form {
+            background-color: #f0e6f6;
+            border-color: #9b59b6;
+        }
+        .adjustment-factor-section {
+            background-color: #e8f4f8;
+            border-color: #3498db;
+        }
+        .adjustment-note {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        #add-aish-payment-btn {
+            background-color: #9b59b6;
+            grid-column: 1;
+        }
+        #add-aish-payment-btn:hover {
+            background-color: #8e44ad;
+        }
+        #remove-aish-payment-btn {
+            background-color: #dc3545;
+            grid-column: 2;
+        }
+        #apply-adjustment-btn {
+            background-color: #3498db;
+            width: 100%;
+        }
+        .reporting-period-summary {
+            margin-top: 20px;
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .reporting-period-summary h4 {
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .calendar-date.selected {
+            background-color: rgba(52, 152, 219, 0.2);
+            box-shadow: inset 0 0 0 2px #3498db;
+        }
+        .refresh-btn {
+            background-color: #6c757d;
+            margin-left: 10px;
+            font-size: 14px;
+            padding: 5px 10px;
+        }
+        .refresh-btn:hover {
+            background-color: #5a6268;
+        }
+        .reload-btn {
+            background-color: #dc3545;
+            margin-left: 10px;
+            font-size: 14px;
+            padding: 5px 10px;
+        }
+        .reload-btn:hover {
+            background-color: #c82333;
+        }
+        .check-btn {
+            background-color: #17a2b8;
+            margin-left: 10px;
+            font-size: 14px;
+            padding: 5px 10px;
+        }
+        .check-btn:hover {
+            background-color: #138496;
+        }
+        .clear-all-btn {
+            background-color: #dc3545;
+            width: 100%;
+            margin-top: 15px;
+        }
+        .clear-all-btn:hover {
+            background-color: #c82333;
+        }
+        .data-point-btn {
+            background-color: #17a2b8;
+            color: white;
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .data-point-btn:hover {
+            background-color: #138496;
+        }
+        .download-btn, .upload-btn {
+            background-color: #28a745;
+            color: white;
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            border: none;
+        }
+        .download-btn:hover, .upload-btn:hover {
+            background-color: #218838;
+        }
+        .save-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        .save-notification.show {
+            opacity: 1;
+        }
+        .data-export-area, .data-import-area {
+            background-color: rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-md);
+        }
+        .data-export-area textarea, .data-import-area textarea {
+            width: 100%;
+            height: 150px;
+            margin: var(--spacing-sm) 0;
+            font-family: monospace;
+            padding: var(--spacing-md);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+        }
+        /* Navigation Link */
+        .nav-link {
+            display: inline-block;
+            background-color: var(--primary);
+            color: var(--text-on-dark); 
+            text-decoration: none;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--spacing-sm);
+        }
+        .nav-link:hover {
+            background-color: var(--primary-dark);
+            text-decoration: none;
+        }
+        .calculator-card {
+            background-color: var(--surface);
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+        }
+        .results {
+            margin-top: var(--spacing-lg);
+            border-top: 1px solid var(--border);
+            padding-top: var(--spacing-lg);
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-sm);
+        }
+        .result-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .page-title {
+            margin: var(--spacing-md) 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>AISH Calculator <span>Income Calculator</span></h1>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Dashboard</a></li>
+                        <li><a href="budget.html">Budget</a></li>
+                        <li><a href="test-storage.html">Data Manager</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <a href="index.html" class="nav-link">← Back to Dashboard</a>
+        
+        <h1 class="page-title">Alberta AISH Calculator</h1>
+        
+        <div class="calculator-card">
+            <h2>Income Calculator</h2>
+            
+            <div class="form-group">
+                <label for="household-type">Household Type:</label>
+                <select id="household-type">
+                    <option value="single">Single Person</option>
+                    <option value="couple">Couple</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="income-type">Income Type:</label>
+                <select id="income-type">
+                    <option value="employment">Employment Income</option>
+                    <option value="self-employment">Self-Employment Income</option>
+                    <option value="other">Other Income</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="income-amount">Monthly Income Amount ($):</label>
+                <input type="number" id="income-amount" min="0" step="0.01">
+            </div>
+            
+            <button id="calculate-btn" class="btn">Calculate</button>
+            
+            <div id="results" class="results" style="display: none;">
+                <div class="result-item">
+                    <span class="result-label">Earned Income:</span>
+                    <span id="earned-income">$0.00</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Income Exemption:</span>
+                    <span id="exemption">$0.00</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Countable Income:</span>
+                    <span id="countable-income">$0.00</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Base AISH Benefit:</span>
+                    <span id="base-benefit">$0.00</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Adjusted AISH Benefit:</span>
+                    <span id="adjusted-benefit">$0.00</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Total Monthly Income:</span>
+                    <span id="total-income">$0.00</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="calculator-card">
+            <h2>Payday Tracker</h2>
+            
+            <p>Track your paydays to help predict AISH benefits based on your reporting period.</p>
+            
+            <div id="calendar-container">
+                <div class="month-selector">
+                    <button id="prev-month">&lt; Previous</button>
+                    <span id="current-month-display"></span>
+                    <button id="next-month">Next &gt;</button>
+                </div>
+                
+                <div class="calendar">
+                    <div class="calendar-days">
+                        <div>Sun</div>
+                        <div>Mon</div>
+                        <div>Tue</div>
+                        <div>Wed</div>
+                        <div>Thu</div>
+                        <div>Fri</div>
+                        <div>Sat</div>
+                    </div>
+                    <div id="calendar-dates">
+                        <!-- Calendar will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h3>Payday Information</h3>
+                <p>Click on a day in the calendar to add a payday.</p>
+            </div>
+            
+            <div id="payday-form" style="display: none;">
+                <h3>Add Payday</h3>
+                
+                <div class="form-group">
+                    <label for="payday-date">Date:</label>
+                    <input type="date" id="payday-date" class="full-width">
+                </div>
+                
+                <div class="form-group">
+                    <label for="payday-amount">Amount ($):</label>
+                    <input type="number" id="payday-amount" min="0" step="0.01" class="full-width">
+                </div>
+                
+                <div class="form-group">
+                    <label for="payday-source">Source:</label>
+                    <input type="text" id="payday-source" placeholder="Employer name" class="full-width">
+                </div>
+                
+                <div class="form-group">
+                    <label for="payday-notes">Notes:</label>
+                    <input type="text" id="payday-notes" placeholder="Optional notes" class="full-width">
+                </div>
+                
+                <div class="form-buttons">
+                    <button id="add-payday-btn">Add Payday</button>
+                    <button id="cancel-edit-btn">Cancel</button>
+                </div>
+                
+                <div class="form-buttons" id="edit-buttons" style="display: none;">
+                    <button id="edit-payday-btn">Update Payday</button>
+                    <button id="remove-payday-btn">Remove Payday</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="calculator-card">
+            <h2>AISH Payment Tracker</h2>
+            
+            <p>Record your AISH payments to keep track of your benefit history.</p>
+            
+            <div class="form-group">
+                <label for="aish-date">Payment Date:</label>
+                <input type="date" id="aish-date">
+            </div>
+            
+            <div class="form-group">
+                <label for="aish-amount">Amount ($):</label>
+                <input type="number" id="aish-amount" min="0" step="0.01">
+            </div>
+            
+            <div class="form-group">
+                <label for="aish-notes">Notes:</label>
+                <input type="text" id="aish-notes" placeholder="Optional notes">
+            </div>
+            
+            <button id="add-aish-btn" class="btn">Add AISH Payment</button>
+            
+            <div id="aish-history" class="results">
+                <h3>Payment History</h3>
+                <div id="aish-list">
+                    <!-- AISH payments will be populated by JS -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="calculator-card">
+            <h2>Data Management</h2>
+            
+            <div class="data-export-area">
+                <h3>Export Data</h3>
+                <p>Copy the text below to back up your AISH Calculator data:</p>
+                <textarea id="export-data" readonly></textarea>
+                <button id="copy-data-btn" class="btn">Copy to Clipboard</button>
+                <button id="export-data-btn" class="btn">Generate Export Data</button>
+            </div>
+            
+            <div class="data-import-area">
+                <h3>Import Data</h3>
+                <p>Paste your backed up data below to restore:</p>
+                <textarea id="import-data" placeholder="Paste your backup data here..."></textarea>
+                <button id="import-data-btn" class="btn">Import Data</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="warning">
+        <h3>Important Information About AISH Reporting</h3>
+        <p>This calculator makes an estimate based on how much info it has on your AISH payments and paychecks to give better results. Enter in all previous months' data until the adjustment is a few dollars away or spot on.</p>
+        <p>The more past AISH payments and payday information you enter, the more accurate the calculator becomes at predicting your future payments.</p>
+    </div>
+        
+    <div class="info-section">
+        <h3>AISH Benefits Information</h3>
+        <p>The Assured Income for the Severely Handicapped (AISH) program provides financial and health benefits to eligible Albertans with a permanent medical condition that prevents them from earning a living.</p>
+        
+        <h4>Emergency Benefits</h4>
+        <p>AISH clients may be eligible for emergency benefits for unexpected costs related to emergency situations.</p>
+        
+        <h4>Asset Exemptions</h4>
+        <p>AISH has asset exemptions that allow clients to have certain assets without affecting their eligibility.</p>
+        
+        <h4>Personal Benefits</h4>
+        <p>Personal benefits are available to help with specific needs related to a client's disability or their family.</p>
+        
+        <h4>Additional Resources</h4>
+        <p>For more information about AISH, visit <a href="https://www.alberta.ca/aish.aspx" target="_blank">Alberta.ca/aish</a> or call the AISH office at 1-866-644-5135.</p>
+    </div>
+    
+    <div class="container">
+        <button id="payday-tracker-btn">Show Payday Tracker</button>
+        <div id="calendar-container" style="display: none;"></div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html> 

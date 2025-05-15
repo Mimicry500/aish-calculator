@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AISH Data Point Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        .result-area {
+            background-color: rgba(0, 0, 0, 0.02);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin-top: var(--spacing-lg);
+            font-family: monospace;
+            white-space: pre-wrap;
+            height: 300px;
+            overflow: auto;
+            border: 1px solid var(--border);
+        }
+        
+        .button-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+        }
+        
+        #clearBtn, #clearAishBtn {
+            background-color: var(--danger);
+        }
+        
+        #clearBtn:hover, #clearAishBtn:hover {
+            background-color: var(--danger);
+            filter: brightness(90%);
+        }
+        
+        #clearPaydaysBtn {
+            background-color: var(--warning);
+        }
+        
+        #clearPaydaysBtn:hover {
+            background-color: var(--warning);
+            filter: brightness(90%);
+        }
+        
+        .data-manager {
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background-color: rgba(33, 150, 243, 0.05);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+        
+        .data-type-selector {
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .data-point-list {
+            margin-top: var(--spacing-sm);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-sm);
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: var(--surface);
+        }
+        
+        .data-point {
+            padding: var(--spacing-sm);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .data-point:last-child {
+            border-bottom: none;
+        }
+        
+        .data-point:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        .data-point-info {
+            flex-grow: 1;
+        }
+        
+        .remove-btn {
+            background-color: var(--danger);
+            color: var(--text-on-dark);
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: var(--spacing-sm);
+        }
+        
+        .remove-btn:hover {
+            background-color: var(--danger);
+            filter: brightness(90%);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .controls {
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background-color: rgba(0, 0, 0, 0.02);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+        
+        .controls h3 {
+            margin-top: 0;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .warning {
+            color: var(--danger);
+            background-color: rgba(244, 67, 54, 0.1);
+            border: 1px solid rgba(244, 67, 54, 0.2);
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .section-heading {
+            margin-top: var(--spacing-xl);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: var(--spacing-xs);
+            color: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>AISH Calculator <span>Data Manager</span></h1>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Dashboard</a></li>
+                        <li><a href="calculator.html">Calculator</a></li>
+                        <li><a href="budget.html">Budget</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <p>Use this tool to view and remove individual paydays or AISH payments.</p>
+        
+        <div class="button-row">
+            <button id="checkBtn" class="btn">Check Saved Data</button>
+            <button id="manageBtn" class="btn btn-secondary">Manage Data Points</button>
+        </div>
+        
+        <h2 class="section-heading">Bulk Data Operations</h2>
+        <div class="controls">
+            <h3>Clear Data Options</h3>
+            <div class="warning">Warning: These actions will permanently delete data and cannot be undone.</div>
+            <div class="button-row">
+                <button id="clearPaydaysBtn" class="btn btn-warning">Clear All Paydays</button>
+                <button id="clearAishBtn" class="btn btn-danger">Clear All AISH Payments</button>
+                <button id="clearBtn" class="btn btn-danger">Clear ALL Data</button>
+            </div>
+        </div>
+        
+        <div class="result-area" id="results">
+            Click "Check Saved Data" to see what's currently saved in your browser.
+        </div>
+        
+        <div id="dataManager" class="data-manager" style="display:none;">
+            <h2>Manage Individual Data Points</h2>
+            <div class="data-type-selector">
+                <label for="dataType">Select data type:</label>
+                <select id="dataType">
+                    <option value="paydays">Paydays</option>
+                    <option value="aishPayments">AISH Payments</option>
+                </select>
+                <button id="loadDataPointsBtn" class="btn">Load Data Points</button>
+            </div>
+            <div id="dataPointList" class="data-point-list">
+                Select a data type and click "Load Data Points" to see individual entries.
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('checkBtn').addEventListener('click', function() {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+            
+            try {
+                // Check for paydays
+                const paydays = localStorage.getItem('paydays');
+                const paydaysBackup = localStorage.getItem('paydays_backup');
+                
+                // Check for AISH payments
+                const aishPayments = localStorage.getItem('aishPayments');
+                const aishPaymentsBackup = localStorage.getItem('aishPayments_backup');
+                
+                // Check for other data
+                const adjustmentFactor = localStorage.getItem('adjustmentFactor');
+                const adjustmentHistory = localStorage.getItem('adjustmentHistory');
+                const adjustmentCount = localStorage.getItem('adjustmentCount');
+                const calculatorData = localStorage.getItem('calculatorData');
+                const viewState = localStorage.getItem('viewState');
+                
+                // Output results
+                results.innerHTML += 'PAYDAYS DATA:\n';
+                results.innerHTML += paydays ? JSON.stringify(JSON.parse(paydays), null, 2) : 'No paydays data found\n';
+                results.innerHTML += '\n\nPAYDAYS BACKUP:\n';
+                results.innerHTML += paydaysBackup ? JSON.stringify(JSON.parse(paydaysBackup), null, 2) : 'No paydays backup found\n';
+                
+                results.innerHTML += '\n\nAISH PAYMENTS DATA:\n';
+                results.innerHTML += aishPayments ? JSON.stringify(JSON.parse(aishPayments), null, 2) : 'No AISH payments data found\n';
+                results.innerHTML += '\n\nAISH PAYMENTS BACKUP:\n';
+                results.innerHTML += aishPaymentsBackup ? JSON.stringify(JSON.parse(aishPaymentsBackup), null, 2) : 'No AISH payments backup found\n';
+                
+                results.innerHTML += '\n\nOTHER DATA:\n';
+                results.innerHTML += `Adjustment Factor: ${adjustmentFactor || 'Not found'}\n`;
+                results.innerHTML += `Adjustment Count: ${adjustmentCount || 'Not found'}\n`;
+                results.innerHTML += `Calculator Data: ${calculatorData ? 'Found' : 'Not found'}\n`;
+                results.innerHTML += `View State: ${viewState ? 'Found' : 'Not found'}\n`;
+                
+            } catch (error) {
+                results.innerHTML = `Error reading localStorage: ${error.message}`;
+            }
+        });
+        
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear ALL saved data? This will remove ALL your paydays and AISH payments.')) {
+                localStorage.clear();
+                alert('All localStorage data has been cleared');
+                document.getElementById('checkBtn').click();
+            }
+        });
+        
+        document.getElementById('clearPaydaysBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear ALL payday data? This action cannot be undone.')) {
+                localStorage.removeItem('paydays');
+                localStorage.removeItem('paydays_backup');
+                alert('All payday data has been cleared');
+                document.getElementById('checkBtn').click();
+            }
+        });
+        
+        document.getElementById('clearAishBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear ALL AISH payment data? This action cannot be undone.')) {
+                localStorage.removeItem('aishPayments');
+                localStorage.removeItem('aishPayments_backup');
+                localStorage.removeItem('adjustmentFactor');
+                localStorage.removeItem('adjustmentHistory');
+                localStorage.removeItem('adjustmentCount');
+                alert('All AISH payment data has been cleared');
+                document.getElementById('checkBtn').click();
+            }
+        });
+        
+        document.getElementById('manageBtn').addEventListener('click', function() {
+            const dataManager = document.getElementById('dataManager');
+            if (dataManager.style.display === 'none') {
+                dataManager.style.display = 'block';
+                this.textContent = 'Hide Data Manager';
+            } else {
+                dataManager.style.display = 'none';
+                this.textContent = 'Manage Data Points';
+            }
+        });
+        
+        document.getElementById('loadDataPointsBtn').addEventListener('click', loadDataPoints);
+        
+        function loadDataPoints() {
+            const dataType = document.getElementById('dataType').value;
+            const dataPointList = document.getElementById('dataPointList');
+            dataPointList.innerHTML = '';
+            
+            try {
+                const data = localStorage.getItem(dataType);
+                
+                if (!data) {
+                    dataPointList.innerHTML = `No ${dataType} data found in localStorage.`;
+                    return;
+                }
+                
+                const parsedData = JSON.parse(data);
+                let dataPoints = [];
+                
+                // Format data points for display
+                for (const monthKey in parsedData) {
+                    const [year, month] = monthKey.split('-');
+                    const monthName = getMonthName(parseInt(month));
+                    
+                    for (const day in parsedData[monthKey]) {
+                        const dataPoint = parsedData[monthKey][day];
+                        const amount = dataPoint.amount || 0;
+                        const note = dataPoint.note || '';
+                        
+                        dataPoints.push({
+                            monthKey: monthKey,
+                            day: day,
+                            displayDate: `${monthName} ${day}, ${year}`,
+                            displayInfo: dataType === 'paydays' ? 
+                                `Amount: $${amount}${note ? ', Note: ' + note : ''}` :
+                                `AISH Payment: $${amount}${dataPoint.adjustment ? ', Adjustment: $' + dataPoint.adjustment : ''}`,
+                            rawData: dataPoint
+                        });
+                    }
+                }
+                
+                // Sort by date (most recent first)
+                dataPoints.sort((a, b) => {
+                    const [aYear, aMonth] = a.monthKey.split('-');
+                    const [bYear, bMonth] = b.monthKey.split('-');
+                    
+                    if (aYear !== bYear) return parseInt(bYear) - parseInt(aYear);
+                    if (aMonth !== bMonth) return parseInt(bMonth) - parseInt(aMonth);
+                    return parseInt(b.day) - parseInt(a.day);
+                });
+                
+                // Create UI for each data point
+                if (dataPoints.length === 0) {
+                    dataPointList.innerHTML = `No ${dataType} entries found.`;
+                } else {
+                    // Add summary
+                    const summaryDiv = document.createElement('div');
+                    summaryDiv.className = 'data-summary';
+                    summaryDiv.innerHTML = `<p><strong>Found ${dataPoints.length} ${dataType} entries.</strong></p>`;
+                    dataPointList.appendChild(summaryDiv);
+                    
+                    dataPoints.forEach(point => {
+                        const dataPointElement = document.createElement('div');
+                        dataPointElement.className = 'data-point';
+                        
+                        const infoElement = document.createElement('div');
+                        infoElement.className = 'data-point-info';
+                        infoElement.innerHTML = `<strong>${point.displayDate}</strong>: ${point.displayInfo}`;
+                        
+                        const removeButton = document.createElement('button');
+                        removeButton.className = 'remove-btn';
+                        removeButton.textContent = 'Remove';
+                        removeButton.addEventListener('click', () => {
+                            removeDataPoint(dataType, point.monthKey, point.day);
+                        });
+                        
+                        dataPointElement.appendChild(infoElement);
+                        dataPointElement.appendChild(removeButton);
+                        dataPointList.appendChild(dataPointElement);
+                    });
+                }
+                
+            } catch (error) {
+                dataPointList.innerHTML = `Error loading ${dataType} data: ${error.message}`;
+            }
+        }
+        
+        function removeDataPoint(dataType, monthKey, day) {
+            try {
+                // Get current data
+                const data = JSON.parse(localStorage.getItem(dataType) || '{}');
+                
+                if (data[monthKey] && data[monthKey][day]) {
+                    // Format date for display
+                    const [year, month] = monthKey.split('-');
+                    const monthName = getMonthName(parseInt(month));
+                    const dateStr = `${monthName} ${day}, ${year}`;
+                    
+                    // Confirm removal
+                    if (confirm(`Are you sure you want to remove the ${dataType === 'paydays' ? 'payday' : 'AISH payment'} on ${dateStr}?`)) {
+                        // Remove the data point
+                        delete data[monthKey][day];
+                        
+                        // If month is now empty, remove the month key
+                        if (Object.keys(data[monthKey]).length === 0) {
+                            delete data[monthKey];
+                        }
+                        
+                        // Save back to localStorage
+                        localStorage.setItem(dataType, JSON.stringify(data));
+                        
+                        // Also update backup
+                        localStorage.setItem(`${dataType}_backup`, JSON.stringify(data));
+                        
+                        // Reload data points
+                        loadDataPoints();
+                        
+                        // Update results display
+                        document.getElementById('checkBtn').click();
+                        
+                        alert(`Data point removed successfully from ${dataType}!`);
+                    }
+                }
+            } catch (error) {
+                alert(`Error removing data point: ${error.message}`);
+            }
+        }
+        
+        function getMonthName(monthIndex) {
+            const months = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            return months[monthIndex] || 'Unknown';
+        }
+    </script>
+</body>
+</html> 
