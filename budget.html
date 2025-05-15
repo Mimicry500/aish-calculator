@@ -1,0 +1,2139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Manager - AISH Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        /* Page-specific styles not covered in theme.css */
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+        }
+        
+        @media (max-width: 768px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .page-title {
+            margin: var(--spacing-lg) 0;
+        }
+        
+        .page-description {
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .total-border {
+            border-top: 2px solid var(--border);
+            margin-top: var(--spacing-sm);
+            padding-top: var(--spacing-sm);
+        }
+        
+        .form-section {
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-sm);
+        }
+        
+        .mt-10 {
+            margin-top: var(--spacing-sm);
+        }
+        
+        .color-indicator {
+            display: flex;
+            gap: var(--spacing-md);
+            align-items: center;
+            margin-top: var(--spacing-lg);
+        }
+        
+        .indicator-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .indicator-color {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+        }
+        
+        .payday-color {
+            background-color: var(--success);
+        }
+        
+        .aish-color {
+            background-color: #9b59b6;
+        }
+        
+        .bill-color {
+            background-color: var(--warning);
+        }
+        
+        .small-btn {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            margin-left: var(--spacing-sm);
+        }
+        
+        .success-btn {
+            background-color: var(--success);
+        }
+        
+        .danger-btn {
+            background-color: var(--danger);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .event-indicator {
+            display: inline-block;
+            margin: 2px;
+            font-size: 16px;
+        }
+        
+        .calendar-date {
+            position: relative;
+            min-height: 80px;
+        }
+        
+        .bill {
+            color: #ff9800;
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+        }
+        
+        /* Calendar specific styles */
+        .calendar-date {
+            position: relative;
+            min-height: 80px;
+            padding: 5px;
+            border: 1px solid #e0e0e0;
+            background-color: #fff;
+        }
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-weight: bold;
+            background-color: #5c6bc0;
+            color: white;
+            padding: 10px 0;
+        }
+        .calendar-row {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+        .calendar-dates {
+            display: flex;
+            flex-direction: column;
+        }
+        .calendar {
+            margin-top: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .month-selector {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .month-selector button {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .month-selector span {
+            margin: 0 10px;
+            font-weight: bold;
+            flex: 1;
+            text-align: center;
+        }
+        .prev-month, .next-month {
+            color: #bdbdbd;
+            background-color: #f9f9f9;
+        }
+        .today {
+            background-color: #e3f2fd;
+            font-weight: bold;
+        }
+        .selected {
+            background-color: #fff8e1;
+            border: 2px solid #ffc107 !important;
+        }
+        .event-indicator {
+            display: inline-block;
+            margin: 2px;
+            font-size: 16px;
+        }
+        .event-indicator.bill {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            background-color: rgba(255, 152, 0, 0.1);
+            border: 1px solid #ff9800;
+            color: #ff9800;
+        }
+        .event-indicator.payday {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background-color: rgba(76, 175, 80, 0.1);
+            border: 1px solid #4caf50;
+            color: #4caf50;
+        }
+        .event-indicator.aish {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(155, 89, 182, 0.1);
+            border: 1px solid #9b59b6;
+            color: #9b59b6;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>AISH Calculator <span>Budget Manager</span></h1>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Dashboard</a></li>
+                        <li><a href="calculator.html">Calculator</a></li>
+                        <li><a href="test-storage.html">Data Manager</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <h2 class="page-title">Budget & Income Management</h2>
+        <p class="page-description">Plan your monthly budget by tracking your income and expenses.</p>
+        
+        <div class="layout">
+            <!-- Budget overview -->
+            <div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Monthly Income</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="summary-item">
+                            <span class="summary-label">Work Income:</span>
+                            <span class="summary-value" id="work-income">$0.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">AISH Benefit:</span>
+                            <span class="summary-value" id="aish-benefit">$0.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Other Income:</span>
+                            <span class="summary-value" id="other-income">$0.00</span>
+                        </div>
+                        <div class="summary-item total-border">
+                            <span class="summary-label">Total Monthly Income:</span>
+                            <span class="summary-value" id="total-income">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Monthly Expenses</h3>
+                    </div>
+                    <div class="card-content">
+                        <div id="expense-list">
+                            <!-- Expenses will be populated here -->
+                            <p id="no-expenses-msg">No expenses added yet. Add your bills below.</p>
+                        </div>
+                        
+                        <div class="summary-item" style="border-top: 2px solid var(--border); margin-top: 10px; padding-top: 10px;">
+                            <span class="summary-label">Total Expenses:</span>
+                            <span class="summary-value" id="total-expenses">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Budget Summary</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="summary-item">
+                            <span class="summary-label">Total Income:</span>
+                            <span class="summary-value" id="summary-income">$0.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Total Expenses:</span>
+                            <span class="summary-value" id="summary-expenses">$0.00</span>
+                        </div>
+                        <div class="summary-item" style="border-top: 2px solid var(--border); margin-top: 10px; padding-top: 10px;">
+                            <span class="summary-label">Remaining Budget:</span>
+                            <span class="summary-value" id="remaining-budget">$0.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Budget Status:</span>
+                            <span class="summary-value" id="budget-status">--</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Add New Expense</h3>
+                    </div>
+                    <div class="card-content">
+                        <div style="margin-bottom: 15px;">
+                            <label for="expense-name" style="display: block; margin-bottom: 5px; font-weight: 500;">Expense Name:</label>
+                            <input type="text" id="expense-name" placeholder="Rent, Utilities, Phone, etc." style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label for="expense-amount" style="display: block; margin-bottom: 5px; font-weight: 500;">Amount ($):</label>
+                            <input type="number" id="expense-amount" min="0" step="0.01" placeholder="Enter expense amount" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label for="expense-category" style="display: block; margin-bottom: 5px; font-weight: 500;">Category:</label>
+                            <select id="expense-category" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                                <option value="housing">Housing</option>
+                                <option value="utilities">Utilities</option>
+                                <option value="food">Food</option>
+                                <option value="transportation">Transportation</option>
+                                <option value="medical">Medical</option>
+                                <option value="entertainment">Entertainment</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label for="expense-date" style="display: block; margin-bottom: 5px; font-weight: 500;">Due Date:</label>
+                            <input type="date" id="expense-date" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label for="expense-recurrence" style="display: block; margin-bottom: 5px; font-weight: 500;">Recurrence:</label>
+                            <select id="expense-recurrence" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                                <option value="none">One-time</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="biweekly">Bi-weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="quarterly">Every 3 months</option>
+                                <option value="yearly">Yearly</option>
+                            </select>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <button class="btn" id="add-expense-btn" style="background-color: #28a745;">Add Expense</button>
+                            <button class="btn btn-outline" id="clear-expense-btn">Clear Form</button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                            <button class="btn btn-outline" id="edit-expense-btn" style="display: none;">Update Expense</button>
+                            <button class="btn" id="remove-expense-btn" style="display: none; background-color: #dc3545;">Remove Expense</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Calendar view -->
+            <div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Income Calendar</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="month-selector">
+                            <button id="prev-month">&lt; Previous</button>
+                            <span id="current-month-display"></span>
+                            <button id="next-month">Next &gt;</button>
+                            <button id="refresh-calendar" class="btn" style="padding: 5px 10px; font-size: 0.8rem; margin-left: 10px;">🔄 Refresh</button>
+                        </div>
+                        
+                        <div id="calendar-container">
+                            <div class="calendar">
+                                <div class="calendar-days">
+                                    <div>Sun</div>
+                                    <div>Mon</div>
+                                    <div>Tue</div>
+                                    <div>Wed</div>
+                                    <div>Thu</div>
+                                    <div>Fri</div>
+                                    <div>Sat</div>
+                                </div>
+                                <div class="calendar-dates" id="calendar-dates">
+                                    <!-- Calendar will be populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px; display: flex; gap: 15px; align-items: center;">
+                            <div style="display: flex; align-items: center;">
+                                <span style="display: inline-block; width: 15px; height: 15px; background-color: #4caf50; margin-right: 5px;"></span>
+                                <span>Payday</span>
+                            </div>
+                            <div style="display: flex; align-items: center;">
+                                <span style="display: inline-block; width: 15px; height: 15px; background-color: #9b59b6; margin-right: 5px;"></span>
+                                <span>AISH Payment</span>
+                            </div>
+                            <div style="display: flex; align-items: center;">
+                                <span style="display: inline-block; width: 15px; height: 15px; background-color: #ff9800; margin-right: 5px;"></span>
+                                <span>Bill Due</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Calendar Forms Section -->
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div class="card" style="flex: 1; min-width: 300px;">
+                        <div class="card-header" style="background-color: #4caf50;">
+                            <h3>Add Payday</h3>
+                        </div>
+                        <div class="card-content">
+                            <div style="margin-bottom: 15px;">
+                                <label for="payday-date" style="display: block; margin-bottom: 5px; font-weight: 500;">Date:</label>
+                                <input type="date" id="payday-date" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label for="payday-amount" style="display: block; margin-bottom: 5px; font-weight: 500;">Amount ($):</label>
+                                <input type="number" id="payday-amount" min="0" step="0.01" placeholder="Enter payday amount" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label for="payday-note" style="display: block; margin-bottom: 5px; font-weight: 500;">Note:</label>
+                                <input type="text" id="payday-note" placeholder="Optional note" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <button class="btn" id="add-payday-btn" style="background-color: #4caf50;">Add Payday</button>
+                                <button class="btn btn-outline" id="clear-payday-form-btn">Clear Form</button>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                                <button class="btn btn-outline" id="edit-payday-btn" style="display: none;">Update Payday</button>
+                                <button class="btn" id="remove-payday-btn" style="display: none; background-color: #dc3545;">Remove Payday</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="flex: 1; min-width: 300px;">
+                        <div class="card-header" style="background-color: #9b59b6;">
+                            <h3>Add AISH Payment</h3>
+                        </div>
+                        <div class="card-content">
+                            <div style="margin-bottom: 15px;">
+                                <label for="aish-payment-date" style="display: block; margin-bottom: 5px; font-weight: 500;">Payment Date:</label>
+                                <input type="date" id="aish-payment-date" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label for="aish-payment-amount" style="display: block; margin-bottom: 5px; font-weight: 500;">Amount ($):</label>
+                                <input type="number" id="aish-payment-amount" min="0" step="0.01" placeholder="Enter AISH payment amount" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                            </div>
+                            <div id="per-payment-adjustment" style="display: none; margin: 10px 0; padding: 10px; background-color: #f5f5f5; border-radius: 4px;"></div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <button class="btn" id="add-aish-payment-btn" style="background-color: #9b59b6;">Add Payment</button>
+                                <button class="btn btn-outline" id="clear-aish-form-btn">Clear Form</button>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                                <button class="btn btn-outline" id="edit-aish-btn" style="display: none;">Update Payment</button>
+                                <button class="btn" id="remove-aish-btn" style="display: none; background-color: #dc3545;">Remove Payment</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+        // Budget page specific JavaScript
+        // Declare expenses variable in the global scope so all functions can access it
+        let expenses = [];
+        let currentExpenseId = null;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Budget page loaded");
+            
+            // Initialize the month display with current month before generating calendar
+            const now = new Date();
+            document.getElementById('current-month-display').textContent = 
+                `${getMonthName(now.getMonth())} ${now.getFullYear()}`;
+            
+            // Initialize calendar with simplified generation
+            refreshCalendar();
+            
+            // Load budget data
+            loadBudgetData();
+            updateBudgetUI();
+            
+            // Event listeners explicitly defined
+            document.getElementById('refresh-calendar').onclick = function(e) {
+                e.preventDefault();
+                console.log("Refresh calendar button clicked");
+                refreshCalendar();
+                return false;
+            };
+            
+            document.getElementById('prev-month').onclick = function(e) {
+                e.preventDefault();
+                console.log("Previous month button clicked");
+                changeMonth(-1);
+                return false;
+            };
+            
+            document.getElementById('next-month').onclick = function(e) {
+                e.preventDefault();
+                console.log("Next month button clicked");
+                changeMonth(1);
+                return false;
+            };
+            
+            // Expense management
+            document.getElementById('add-expense-btn').addEventListener('click', addExpense);
+            document.getElementById('clear-expense-btn').addEventListener('click', clearExpenseForm);
+            document.getElementById('edit-expense-btn').addEventListener('click', updateExpense);
+            document.getElementById('remove-expense-btn').addEventListener('click', function() {
+                if (currentExpenseId) removeExpense(currentExpenseId);
+            });
+            
+            // Payday management
+            document.getElementById('add-payday-btn').addEventListener('click', addPayday);
+            document.getElementById('clear-payday-form-btn').addEventListener('click', clearPaydayForm);
+            document.getElementById('edit-payday-btn').addEventListener('click', updatePayday);
+            document.getElementById('remove-payday-btn').addEventListener('click', removePayday);
+            
+            // AISH payment management
+            document.getElementById('add-aish-payment-btn').addEventListener('click', addAishPayment);
+            document.getElementById('clear-aish-form-btn').addEventListener('click', clearAishForm);
+            document.getElementById('edit-aish-btn').addEventListener('click', updateAishPayment);
+            document.getElementById('remove-aish-btn').addEventListener('click', removeAishPayment);
+            
+            // Create calendar date click event
+            document.querySelectorAll('.calendar-date').forEach(date => {
+                date.addEventListener('click', function() {
+                    selectCalendarDate(this);
+                });
+            });
+            
+            // No need to add styles here as they're already in the CSS section
+        });
+        
+        // Function to load budget data from localStorage
+        function loadBudgetData() {
+            console.log("Loading budget data");
+            
+            // Load expenses
+            const savedExpenses = localStorage.getItem('budgetExpenses');
+            console.log("Saved expenses from localStorage:", savedExpenses);
+            
+            if (savedExpenses) {
+                expenses = JSON.parse(savedExpenses);
+                console.log("Expenses loaded:", expenses);
+            } else {
+                console.log("No saved expenses found in localStorage");
+            }
+            
+            // Load paydays and income for this month
+            updateIncomeDisplay();
+        }
+        
+        // Function to save budget data to localStorage
+        function saveBudgetData() {
+            console.log("Saving budget data, expenses:", expenses);
+            localStorage.setItem('budgetExpenses', JSON.stringify(expenses));
+            console.log("Budget data saved to localStorage");
+            
+            // Verify it was saved correctly
+            const savedData = localStorage.getItem('budgetExpenses');
+            console.log("Verification - data in localStorage:", savedData);
+        }
+        
+        // Function to update the budget UI
+        function updateBudgetUI() {
+            console.log("Updating budget UI");
+            
+            // Update income display
+            updateIncomeDisplay();
+            
+            // Display expenses
+            displayExpenses();
+            
+            // Update budget summary
+            updateBudgetSummary();
+        }
+        
+        // Function to update income display
+        function updateIncomeDisplay() {
+            const income = calculateMonthlyIncome();
+            
+            document.getElementById('work-income').textContent = formatCurrency(income.work);
+            document.getElementById('aish-benefit').textContent = formatCurrency(income.aish);
+            document.getElementById('other-income').textContent = formatCurrency(income.other);
+            document.getElementById('total-income').textContent = formatCurrency(income.total);
+            
+            // Also update summary section
+            document.getElementById('summary-income').textContent = formatCurrency(income.total);
+        }
+        
+        // Function to calculate monthly income
+        function calculateMonthlyIncome() {
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            
+            // Get previous month
+            let prevMonth = currentMonth - 1;
+            let prevYear = currentYear;
+            if (prevMonth < 0) {
+                prevMonth = 11;
+                prevYear--;
+            }
+            
+            // Get paydays from localStorage
+            const paydays = JSON.parse(localStorage.getItem('paydays') || '{}');
+            
+            // Get AISH payments from localStorage
+            const aishPayments = JSON.parse(localStorage.getItem('aishPayments') || '{}');
+            
+            // Calculate current month work income
+            let workIncome = 0;
+            const currentMonthKey = `${currentYear}-${currentMonth}`;
+            if (paydays[currentMonthKey]) {
+                for (const day in paydays[currentMonthKey]) {
+                    workIncome += paydays[currentMonthKey][day].amount || 0;
+                }
+            }
+            
+            // Get AISH benefit (should be based on previous month's income)
+            let aishBenefit = 0;
+            if (aishPayments[currentMonthKey]) {
+                for (const day in aishPayments[currentMonthKey]) {
+                    aishBenefit += aishPayments[currentMonthKey][day].amount || 0;
+                }
+            }
+            
+            if (aishBenefit === 0) {
+                // If no AISH payments recorded, estimate it
+                const prevMonthKey = `${prevYear}-${prevMonth}`;
+                let prevMonthIncome = 0;
+                
+                if (paydays[prevMonthKey]) {
+                    for (const day in paydays[prevMonthKey]) {
+                        prevMonthIncome += paydays[prevMonthKey][day].amount || 0;
+                    }
+                }
+                
+                // Base AISH calculation
+                if (prevMonthIncome <= 1072) {
+                    aishBenefit = 1901;
+                } else if (prevMonthIncome <= 2009) {
+                    const reductionAmount = (prevMonthIncome - 1072) * 0.5;
+                    aishBenefit = 1901 - reductionAmount;
+                } else {
+                    aishBenefit = 1901 - ((1541 - 1072) * 0.5) - (prevMonthIncome - 2009);
+                }
+                
+                aishBenefit = Math.max(0, Math.floor(aishBenefit));
+                
+                // Apply adjustment factor if available
+                const adjustmentFactor = parseFloat(localStorage.getItem('adjustmentFactor') || '0');
+                aishBenefit += adjustmentFactor;
+            }
+            
+            // For this demo, we'll set other income to 0
+            const otherIncome = 0;
+            
+            return {
+                work: workIncome,
+                aish: aishBenefit,
+                other: otherIncome,
+                total: workIncome + aishBenefit + otherIncome
+            };
+        }
+        
+        // Function to display expenses
+        function displayExpenses() {
+            console.log("Displaying expenses:", expenses);
+            
+            const expenseList = document.getElementById('expense-list');
+            const noExpensesMsg = document.getElementById('no-expenses-msg');
+            
+            if (!expenseList || !noExpensesMsg) {
+                console.error("Could not find expense-list or no-expenses-msg elements");
+                return;
+            }
+            
+            if (expenses.length > 0) {
+                expenseList.innerHTML = '';
+                noExpensesMsg.style.display = 'none';
+                
+                console.log(`Rendering ${expenses.length} expenses`);
+                
+                expenses.forEach(expense => {
+                    console.log("Rendering expense:", expense);
+                    
+                    const expenseItem = document.createElement('div');
+                    expenseItem.className = 'expense-item';
+                    expenseItem.style.display = 'flex';
+                    expenseItem.style.justifyContent = 'space-between';
+                    expenseItem.style.alignItems = 'center';
+                    expenseItem.style.padding = '10px';
+                    expenseItem.style.borderBottom = '1px solid #eee';
+                    expenseItem.setAttribute('data-id', expense.id);
+                    
+                    const expenseDetails = document.createElement('div');
+                    expenseDetails.style.flex = '1';
+                    
+                    const expenseName = document.createElement('div');
+                    expenseName.style.fontWeight = '500';
+                    expenseName.textContent = expense.name;
+                    
+                    const expenseCategory = document.createElement('div');
+                    expenseCategory.style.fontSize = '0.8rem';
+                    expenseCategory.style.color = '#757575';
+                    expenseCategory.textContent = getCategoryLabel(expense.category);
+                    
+                    if (expense.dueDate) {
+                        const dueDate = new Date(expense.dueDate);
+                        const dueDateStr = dueDate.toLocaleDateString();
+                        expenseCategory.textContent += ` • Due: ${dueDateStr}`;
+                        
+                        // Add recurrence information if applicable
+                        if (expense.recurrence && expense.recurrence !== 'none') {
+                            expenseCategory.textContent += ` • ${getRecurrenceText(expense.recurrence)}`;
+                        }
+                    }
+                    
+                    expenseDetails.appendChild(expenseName);
+                    expenseDetails.appendChild(expenseCategory);
+                    
+                    const expenseAmount = document.createElement('div');
+                    expenseAmount.style.fontWeight = '700';
+                    expenseAmount.style.color = '#b71c1c';
+                    expenseAmount.style.marginRight = '10px';
+                    expenseAmount.textContent = formatCurrency(expense.amount);
+                    
+                    const expenseActions = document.createElement('div');
+                    expenseActions.style.display = 'flex';
+                    expenseActions.style.gap = '5px';
+                    
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'edit-expense-btn';
+                    editBtn.style.background = 'none';
+                    editBtn.style.border = 'none';
+                    editBtn.style.cursor = 'pointer';
+                    editBtn.style.color = '#757575';
+                    editBtn.style.fontSize = '1.2rem';
+                    editBtn.innerHTML = '✏️';
+                    editBtn.title = 'Edit expense';
+                    // Use direct function instead of arrow function to avoid scope issues
+                    editBtn.addEventListener('click', function() {
+                        console.log("Edit button clicked for expense ID:", expense.id);
+                        editExpense(expense.id);
+                    });
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-expense-btn';
+                    deleteBtn.style.background = 'none';
+                    deleteBtn.style.border = 'none';
+                    deleteBtn.style.cursor = 'pointer';
+                    deleteBtn.style.color = '#757575';
+                    deleteBtn.style.fontSize = '1.2rem';
+                    deleteBtn.style.marginLeft = '5px';
+                    deleteBtn.innerHTML = '🗑️';
+                    deleteBtn.title = 'Delete expense';
+                    // Use direct function instead of arrow function to avoid scope issues
+                    deleteBtn.addEventListener('click', function() {
+                        console.log("Delete button clicked for expense ID:", expense.id);
+                        removeExpense(expense.id);
+                    });
+                    
+                    expenseActions.appendChild(editBtn);
+                    expenseActions.appendChild(deleteBtn);
+                    
+                    expenseItem.appendChild(expenseDetails);
+                    expenseItem.appendChild(expenseAmount);
+                    expenseItem.appendChild(expenseActions);
+                    
+                    expenseList.appendChild(expenseItem);
+                });
+            } else {
+                console.log("No expenses to display");
+                noExpensesMsg.style.display = 'block';
+            }
+            
+            // Update total expenses display
+            const totalExpenses = calculateTotalExpenses();
+            console.log("Total expenses:", totalExpenses);
+            document.getElementById('total-expenses').textContent = formatCurrency(totalExpenses);
+            document.getElementById('summary-expenses').textContent = formatCurrency(totalExpenses);
+        }
+        
+        // Function to update budget summary
+        function updateBudgetSummary() {
+            const income = calculateMonthlyIncome();
+            const totalExpenses = calculateTotalExpenses();
+            
+            const remainingBudget = income.total - totalExpenses;
+            
+            document.getElementById('remaining-budget').textContent = formatCurrency(remainingBudget);
+            
+            // Update budget status
+            const budgetStatus = document.getElementById('budget-status');
+            if (remainingBudget > income.total * 0.25) {
+                budgetStatus.textContent = 'Healthy';
+                budgetStatus.style.color = '#26a69a';
+            } else if (remainingBudget > 0) {
+                budgetStatus.textContent = 'Tight';
+                budgetStatus.style.color = '#f39c12';
+            } else {
+                budgetStatus.textContent = 'Deficit';
+                budgetStatus.style.color = '#b71c1c';
+            }
+        }
+        
+        // Function to calculate total expenses
+        function calculateTotalExpenses() {
+            return expenses.reduce((total, expense) => total + expense.amount, 0);
+        }
+        
+        // Function to get the category label
+        function getCategoryLabel(category) {
+            const categories = {
+                'housing': 'Housing',
+                'utilities': 'Utilities',
+                'food': 'Food',
+                'transportation': 'Transportation',
+                'medical': 'Medical',
+                'entertainment': 'Entertainment',
+                'other': 'Other'
+            };
+            return categories[category] || 'Other';
+        }
+        
+        // Function to add a new expense
+        function addExpense() {
+            console.log("Add expense function called");
+            
+            const name = document.getElementById('expense-name').value.trim();
+            const amount = parseFloat(document.getElementById('expense-amount').value) || 0;
+            const category = document.getElementById('expense-category').value;
+            const dueDate = document.getElementById('expense-date').value;
+            const recurrence = document.getElementById('expense-recurrence').value;
+            
+            console.log("Form values:", { name, amount, category, dueDate, recurrence });
+            
+            if (!name || amount <= 0) {
+                alert('Please enter a valid expense name and amount.');
+                console.log("Validation failed: Missing name or amount");
+                return;
+            }
+            
+            if (!dueDate) {
+                alert('Please select a due date for the expense.');
+                console.log("Validation failed: Missing due date");
+                return;
+            }
+            
+            // Create new expense object
+            const newExpense = {
+                id: Date.now(),
+                name: name,
+                amount: amount,
+                category: category,
+                dueDate: dueDate,
+                recurrence: recurrence,
+                date: new Date().toISOString()
+            };
+            
+            console.log("New expense object:", newExpense);
+            
+            // Add to expenses array
+            expenses.push(newExpense);
+            console.log("Expenses array after adding:", expenses);
+            
+            // Save to localStorage
+            saveBudgetData();
+            
+            // Clear form
+            clearExpenseForm();
+            
+            // Update UI directly
+            displayExpenses();
+            updateBudgetSummary();
+            updateIncomeDisplay();
+            
+            // Update calendar to show bill due dates
+            refreshCalendar();
+            
+            // Show confirmation
+            showSaveNotification(`Expense "${name}" added successfully!`);
+        }
+        
+        // Function to edit an expense
+        function editExpense(id) {
+            console.log("Editing expense with ID:", id);
+            
+            // Find the expense
+            const expense = expenses.find(exp => exp.id === id);
+            if (!expense) {
+                console.error("Could not find expense with ID:", id);
+                alert("Could not find the expense to edit. Please try again.");
+                return;
+            }
+            
+            console.log("Found expense to edit:", expense);
+            
+            // Fill the form with expense details
+            document.getElementById('expense-name').value = expense.name;
+            document.getElementById('expense-amount').value = expense.amount;
+            document.getElementById('expense-category').value = expense.category || 'housing';
+            if (expense.dueDate) {
+                document.getElementById('expense-date').value = expense.dueDate;
+            } else {
+                // Set a default date if none exists
+                document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+            }
+            document.getElementById('expense-recurrence').value = expense.recurrence || 'none';
+            
+            // Show edit buttons and hide add button
+            document.getElementById('add-expense-btn').style.display = 'none';
+            document.getElementById('edit-expense-btn').style.display = 'block';
+            document.getElementById('remove-expense-btn').style.display = 'block';
+            
+            // Store current expense ID
+            currentExpenseId = id;
+            
+            // Scroll to the expense form
+            document.getElementById('expense-name').scrollIntoView({ behavior: 'smooth' });
+            
+            // Focus on the name field
+            setTimeout(() => document.getElementById('expense-name').focus(), 300);
+        }
+        
+        // Function to update an expense
+        function updateExpense() {
+            console.log("Updating expense with ID:", currentExpenseId);
+            
+            if (!currentExpenseId) {
+                console.error("No expense ID selected for updating");
+                alert("No expense selected for updating. Please try again.");
+                return;
+            }
+            
+            const name = document.getElementById('expense-name').value.trim();
+            const amount = parseFloat(document.getElementById('expense-amount').value) || 0;
+            const category = document.getElementById('expense-category').value;
+            const dueDate = document.getElementById('expense-date').value;
+            const recurrence = document.getElementById('expense-recurrence').value;
+            
+            console.log("Update form values:", { name, amount, category, dueDate, recurrence });
+            
+            if (!name || amount <= 0) {
+                alert('Please enter a valid expense name and amount.');
+                console.log("Validation failed: Missing name or amount");
+                return;
+            }
+            
+            // Find and update the expense
+            const index = expenses.findIndex(exp => exp.id === currentExpenseId);
+            if (index !== -1) {
+                expenses[index].name = name;
+                expenses[index].amount = amount;
+                expenses[index].category = category;
+                expenses[index].dueDate = dueDate;
+                expenses[index].recurrence = recurrence;
+                expenses[index].lastUpdated = new Date().toISOString();
+                
+                console.log("Updated expense:", expenses[index]);
+                
+                // Save to localStorage
+                saveBudgetData();
+                
+                // Clear form
+                clearExpenseForm();
+                
+                // Update UI
+                displayExpenses();
+                updateBudgetSummary();
+                
+                // Update calendar
+                refreshCalendar();
+                
+                // Show confirmation
+                showSaveNotification(`Expense "${name}" updated successfully!`);
+            } else {
+                console.error("Could not find expense with ID:", currentExpenseId);
+                alert("Error: Could not find the expense to update. Please try again.");
+            }
+        }
+        
+        // Function to remove an expense
+        function removeExpense(id) {
+            console.log("Removing expense with ID:", id);
+            
+            if (confirm('Are you sure you want to remove this expense?')) {
+                // Find the expense for the confirmation message
+                const expense = expenses.find(exp => exp.id === id);
+                const expenseName = expense ? expense.name : "expense";
+                
+                // Filter out the expense with the given ID
+                expenses = expenses.filter(exp => exp.id !== id);
+                
+                console.log("Expenses after removal:", expenses);
+                
+                // Save to localStorage
+                saveBudgetData();
+                
+                // If we're editing this expense, reset the form
+                if (currentExpenseId === id) {
+                    clearExpenseForm();
+                }
+                
+                // Update UI immediately
+                displayExpenses();
+                updateBudgetSummary();
+                
+                // Update calendar
+                refreshCalendar();
+                
+                // Show confirmation
+                showSaveNotification(`Expense "${expenseName}" removed successfully!`);
+            }
+        }
+        
+        // Function to clear the expense form
+        function clearExpenseForm() {
+            document.getElementById('expense-name').value = '';
+            document.getElementById('expense-amount').value = '';
+            document.getElementById('expense-category').value = 'housing';
+            document.getElementById('expense-date').value = '';
+            document.getElementById('expense-recurrence').value = 'none';
+            
+            // Reset buttons
+            document.getElementById('add-expense-btn').style.display = 'block';
+            document.getElementById('edit-expense-btn').style.display = 'none';
+            document.getElementById('remove-expense-btn').style.display = 'none';
+            
+            // Reset current expense ID
+            currentExpenseId = null;
+        }
+        
+        // Helper function to format currency
+        function formatCurrency(amount) {
+            return '$' + (Math.round(amount * 100) / 100).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+        
+        // Function to clear payday form
+        function clearPaydayForm() {
+            document.getElementById('payday-date').value = '';
+            document.getElementById('payday-amount').value = '';
+            document.getElementById('payday-note').value = '';
+            
+            document.getElementById('add-payday-btn').style.display = 'block';
+            document.getElementById('edit-payday-btn').style.display = 'none';
+            document.getElementById('remove-payday-btn').style.display = 'none';
+        }
+        
+        // Function to clear AISH form
+        function clearAishForm() {
+            document.getElementById('aish-payment-date').value = '';
+            document.getElementById('aish-payment-amount').value = '';
+            
+            document.getElementById('add-aish-payment-btn').style.display = 'block';
+            document.getElementById('edit-aish-btn').style.display = 'none';
+            document.getElementById('remove-aish-btn').style.display = 'none';
+            
+            document.getElementById('per-payment-adjustment').style.display = 'none';
+        }
+        
+        function generateCalendar() {
+            console.log("Generating calendar - START");
+            
+            // Get current month and year from display
+            const currentMonthDisplay = document.getElementById('current-month-display').textContent;
+            console.log("Current month display:", currentMonthDisplay);
+            
+            // Split the month name and year
+            const [monthName, year] = currentMonthDisplay.split(' ');
+            console.log("Split month name and year:", monthName, year);
+            
+            // Convert month name to number
+            const currentMonth = getMonthNumber(monthName);
+            const currentYear = parseInt(year);
+            console.log("Converted month and year:", currentMonth, currentYear);
+            
+            if (isNaN(currentMonth) || isNaN(currentYear)) {
+                console.error("Invalid month or year:", monthName, year);
+                // Fall back to current month and year if parsing fails
+                const now = new Date();
+                const fallbackMonth = now.getMonth();
+                const fallbackYear = now.getFullYear();
+                console.log("Falling back to current month/year:", getMonthName(fallbackMonth), fallbackYear);
+                
+                // Update the display
+                document.getElementById('current-month-display').textContent = 
+                    `${getMonthName(fallbackMonth)} ${fallbackYear}`;
+                
+                // Retry with correct values
+                setTimeout(generateCalendar, 0);
+                return;
+            }
+            
+            console.log(`Generating calendar for ${monthName} ${currentYear} (month index: ${currentMonth})`);
+            
+            // Get dates container
+            const calendarDates = document.getElementById('calendar-dates');
+            console.log("Calendar dates element:", calendarDates);
+            
+            if (!calendarDates) {
+                console.error("Could not find calendar-dates element");
+                return;
+            }
+            
+            // Clear any existing content
+            calendarDates.innerHTML = '';
+            
+            // Get first day of month and number of days
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            
+            console.log("First day of month:", firstDay, "Days in month:", daysInMonth);
+            
+            // Previous month's days
+            const prevMonthDays = new Date(currentYear, currentMonth, 0).getDate();
+            
+            // Create calendar days
+            let dayCount = 1;
+            let nextMonthDay = 1;
+            
+            // Create rows for the calendar (maximum 6 rows)
+            for (let i = 0; i < 6; i++) {
+                // Stop if we've already displayed all days for this month
+                if (dayCount > daysInMonth && i > 0) {
+                    break;
+                }
+                
+                const calendarRow = document.createElement('div');
+                calendarRow.className = 'calendar-row';
+                console.log(`Creating row ${i}`);
+                
+                // Create columns for each day of the week
+                for (let j = 0; j < 7; j++) {
+                    const dayDiv = document.createElement('div');
+                    dayDiv.className = 'calendar-date';
+                    
+                    if (i === 0 && j < firstDay) {
+                        // Previous month days
+                        const prevDay = prevMonthDays - (firstDay - j - 1);
+                        dayDiv.textContent = prevDay;
+                        dayDiv.className += ' prev-month';
+                        dayDiv.setAttribute('data-date', prevDay);
+                        console.log(`Adding prev month day: ${prevDay}`);
+                    } else if (dayCount > daysInMonth) {
+                        // Next month days
+                        dayDiv.textContent = nextMonthDay;
+                        dayDiv.className += ' next-month';
+                        dayDiv.setAttribute('data-date', nextMonthDay);
+                        console.log(`Adding next month day: ${nextMonthDay}`);
+                        nextMonthDay++;
+                    } else {
+                        // Current month days
+                        const now = new Date();
+                        const isToday = dayCount === now.getDate() && 
+                                      currentMonth === now.getMonth() && 
+                                      currentYear === now.getFullYear();
+                        
+                        dayDiv.textContent = dayCount;
+                        dayDiv.className += ' current-month';
+                        if (isToday) dayDiv.className += ' today';
+                        
+                        dayDiv.setAttribute('data-date', dayCount);
+                        dayDiv.setAttribute('data-month', currentMonth);
+                        dayDiv.setAttribute('data-year', currentYear);
+                        console.log(`Adding current month day: ${dayCount}`);
+                        
+                        // Add click event to each day
+                        dayDiv.addEventListener('click', function() {
+                            selectCalendarDate(this);
+                        });
+                        
+                        dayCount++;
+                    }
+                    
+                    calendarRow.appendChild(dayDiv);
+                }
+                
+                calendarDates.appendChild(calendarRow);
+                console.log(`Added row ${i} to calendar`);
+            }
+            
+            console.log("Calendar generation complete - loading events");
+            // Load paydays and AISH payments
+            loadCalendarEvents();
+            console.log("Generating calendar - END");
+        }
+        
+        function getMonthNumber(monthName) {
+            if (!monthName) return null;
+            
+            const months = {
+                'January': 0, 'February': 1, 'March': 2, 'April': 3, 'May': 4, 'June': 5,
+                'July': 6, 'August': 7, 'September': 8, 'October': 9, 'November': 10, 'December': 11
+            };
+            
+            return months[monthName];
+        }
+        
+        function loadCalendarEvents() {
+            console.log("Loading calendar events");
+            
+            // Get current month and year from the calendar display
+            const currentMonthDisplay = document.getElementById('current-month-display').textContent;
+            const [monthName, year] = currentMonthDisplay.split(' ');
+            
+            const month = getMonthNumber(monthName);
+            const yearNum = parseInt(year);
+            
+            // Get paydays from localStorage
+            const paydays = JSON.parse(localStorage.getItem('paydays') || '{}');
+            
+            // Get AISH payments from localStorage
+            const aishPayments = JSON.parse(localStorage.getItem('aishPayments') || '{}');
+            
+            // Use the global expenses array instead of loading from localStorage again
+            console.log("Expenses for calendar (using global array):", expenses);
+            
+            // Display current month's paydays
+            const monthKey = `${yearNum}-${month}`;
+            if (paydays[monthKey]) {
+                for (const day in paydays[monthKey]) {
+                    const payday = paydays[monthKey][day];
+                    const dayCell = document.querySelector(`.calendar-date.current-month[data-date="${day}"]`);
+                    
+                    if (dayCell) {
+                        // Add payday indicator
+                        const indicator = document.createElement('div');
+                        indicator.className = 'event-indicator payday';
+                        indicator.innerHTML = '💰';
+                        indicator.title = `Payday: ${formatCurrency(payday.amount)}`;
+                        dayCell.appendChild(indicator);
+                    }
+                }
+            }
+            
+            // Display current month's AISH payments
+            if (aishPayments[monthKey]) {
+                for (const day in aishPayments[monthKey]) {
+                    const payment = aishPayments[monthKey][day];
+                    const dayCell = document.querySelector(`.calendar-date.current-month[data-date="${day}"]`);
+                    
+                    if (dayCell) {
+                        // Add AISH payment indicator
+                        const indicator = document.createElement('div');
+                        indicator.className = 'event-indicator aish';
+                        indicator.innerHTML = '💜';
+                        indicator.title = `AISH Payment: ${formatCurrency(payment.amount)}`;
+                        dayCell.appendChild(indicator);
+                    }
+                }
+            }
+            
+            // Display expenses due dates
+            console.log("Processing expenses for calendar, count:", expenses.length);
+            expenses.forEach(expense => {
+                console.log("Processing expense for calendar:", expense);
+                if (expense.dueDate) {
+                    try {
+                        // Handle one-time expenses
+                        const originalDueDate = new Date(expense.dueDate);
+                        console.log("Expense due date:", originalDueDate, "Current month/year:", month, yearNum);
+                        
+                        // Check if this is a recurring expense or a one-time expense
+                        if (!expense.recurrence || expense.recurrence === 'none') {
+                            // One-time expense - only show if it's in the current month/year
+                            if (originalDueDate.getMonth() === month && originalDueDate.getFullYear() === yearNum) {
+                                const day = originalDueDate.getDate();
+                                console.log("Adding one-time expense to calendar on day:", day);
+                                addExpenseToCalendar(day, expense);
+                            }
+                        } else {
+                            // Recurring expense - calculate if it should appear in this month
+                            const dueDates = calculateRecurringDates(originalDueDate, expense.recurrence, month, yearNum);
+                            console.log("Recurring expense dates:", dueDates);
+                            
+                            dueDates.forEach(dueDate => {
+                                const day = dueDate.getDate();
+                                console.log("Adding recurring expense to calendar on day:", day);
+                                addExpenseToCalendar(day, expense);
+                            });
+                        }
+                    } catch (error) {
+                        console.error("Error processing expense for calendar:", error, expense);
+                    }
+                }
+            });
+            
+            // Helper function to add expense indicator to calendar
+            function addExpenseToCalendar(day, expense) {
+                const dayCell = document.querySelector(`.calendar-date.current-month[data-date="${day}"]`);
+                console.log("Adding expense to calendar day:", day, "dayCell:", dayCell);
+                if (dayCell) {
+                    // Add bill due indicator
+                    const indicator = document.createElement('div');
+                    indicator.className = 'event-indicator bill';
+                    indicator.innerHTML = '🧾';
+                    
+                    // Create a descriptive title
+                    let title = `Due: ${expense.name} (${formatCurrency(expense.amount)})`;
+                    if (expense.recurrence && expense.recurrence !== 'none') {
+                        title += ` - ${getRecurrenceText(expense.recurrence)}`;
+                    }
+                    
+                    indicator.title = title;
+                    dayCell.appendChild(indicator);
+                    console.log("Added expense indicator to day:", day);
+                } else {
+                    console.warn("Could not find day cell for day:", day);
+                }
+            }
+        }
+        
+        function selectCalendarDate(dateElement) {
+            // Clear any previous selection
+            document.querySelectorAll('.calendar-date.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Mark selected date
+            dateElement.classList.add('selected');
+            
+            // Get date information
+            const day = dateElement.getAttribute('data-date');
+            const month = dateElement.getAttribute('data-month');
+            const year = dateElement.getAttribute('data-year');
+            
+            if (!month || !year) return; // Skip if not a current month date
+            
+            const date = new Date(year, month, day);
+            console.log("Selected date:", date.toISOString());
+            
+            // Format for date input fields
+            const formattedDate = `${year}-${(parseInt(month) + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+            console.log("Formatted date for inputs:", formattedDate);
+            
+            // Set date in the payday form
+            document.getElementById('payday-date').value = formattedDate;
+            
+            // Set date in the AISH payment form
+            document.getElementById('aish-payment-date').value = formattedDate;
+            
+            // Set date in the expense form
+            document.getElementById('expense-date').value = formattedDate;
+            
+            // Check if there's a payday for this date
+            const paydays = JSON.parse(localStorage.getItem('paydays') || '{}');
+            const monthKey = `${year}-${month}`;
+            
+            if (paydays[monthKey] && paydays[monthKey][day]) {
+                const payday = paydays[monthKey][day];
+                document.getElementById('payday-amount').value = payday.amount;
+                document.getElementById('payday-note').value = payday.note || '';
+                document.getElementById('edit-payday-btn').style.display = 'block';
+                document.getElementById('remove-payday-btn').style.display = 'block';
+                document.getElementById('add-payday-btn').style.display = 'none';
+            } else {
+                document.getElementById('edit-payday-btn').style.display = 'none';
+                document.getElementById('remove-payday-btn').style.display = 'none';
+                document.getElementById('add-payday-btn').style.display = 'block';
+            }
+            
+            // Check if there's an AISH payment for this date
+            const aishPayments = JSON.parse(localStorage.getItem('aishPayments') || '{}');
+            
+            if (aishPayments[monthKey] && aishPayments[monthKey][day]) {
+                const payment = aishPayments[monthKey][day];
+                document.getElementById('aish-payment-amount').value = payment.amount;
+                document.getElementById('edit-aish-btn').style.display = 'block';
+                document.getElementById('remove-aish-btn').style.display = 'block';
+                document.getElementById('add-aish-payment-btn').style.display = 'none';
+            } else {
+                document.getElementById('edit-aish-btn').style.display = 'none';
+                document.getElementById('remove-aish-btn').style.display = 'none';
+                document.getElementById('add-aish-payment-btn').style.display = 'block';
+            }
+            
+            // Check if there are expenses due on this date and highlight them in the list
+            highlightExpensesForDate(date);
+        }
+        
+        // Function to highlight expenses for a selected date
+        function highlightExpensesForDate(selectedDate) {
+            console.log("Highlighting expenses for date:", selectedDate.toISOString());
+            
+            // First remove all highlights
+            document.querySelectorAll('.expense-item-highlighted').forEach(item => {
+                item.classList.remove('expense-item-highlighted');
+            });
+            
+            // Format the selected date for comparison
+            const selectedYear = selectedDate.getFullYear();
+            const selectedMonth = selectedDate.getMonth();
+            const selectedDay = selectedDate.getDate();
+            
+            // Add CSS for highlighted expenses if it doesn't exist
+            if (!document.getElementById('expense-highlight-style')) {
+                const style = document.createElement('style');
+                style.id = 'expense-highlight-style';
+                style.textContent = `
+                    .expense-item-highlighted {
+                        background-color: rgba(33, 150, 243, 0.1);
+                        border-left: 3px solid var(--primary);
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // Find expenses due on the selected date
+            expenses.forEach(expense => {
+                if (expense.dueDate) {
+                    const dueDate = new Date(expense.dueDate);
+                    const isRecurring = expense.recurrence && expense.recurrence !== 'none';
+                    
+                    // Check if it's a direct match for one-time expenses
+                    if (!isRecurring && 
+                        dueDate.getFullYear() === selectedYear && 
+                        dueDate.getMonth() === selectedMonth && 
+                        dueDate.getDate() === selectedDay) {
+                        
+                        highlightExpense(expense.id);
+                    }
+                    // For recurring expenses, calculate if this date is in the recurrence pattern
+                    else if (isRecurring) {
+                        const recurringDates = calculateRecurringDates(
+                            dueDate, 
+                            expense.recurrence, 
+                            selectedMonth, 
+                            selectedYear
+                        );
+                        
+                        // Check if any of the calculated dates match the selected date
+                        const matchingDate = recurringDates.find(date => 
+                            date.getFullYear() === selectedYear && 
+                            date.getMonth() === selectedMonth && 
+                            date.getDate() === selectedDay
+                        );
+                        
+                        if (matchingDate) {
+                            highlightExpense(expense.id);
+                        }
+                    }
+                }
+            });
+            
+            // Helper function to highlight an expense in the list
+            function highlightExpense(id) {
+                const expenseElement = document.querySelector(`.expense-item[data-id="${id}"]`);
+                if (expenseElement) {
+                    expenseElement.classList.add('expense-item-highlighted');
+                    expenseElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        }
+        
+        // Function to add a payday
+        function addPayday() {
+            const paydayDate = document.getElementById('payday-date').value;
+            const paydayAmount = parseFloat(document.getElementById('payday-amount').value);
+            const paydayNote = document.getElementById('payday-note').value.trim();
+            
+            if (!paydayDate || isNaN(paydayAmount) || paydayAmount <= 0) {
+                alert('Please enter a valid date and amount.');
+                return;
+            }
+            
+            const date = new Date(paydayDate);
+            const day = date.getDate();
+            const month = date.getMonth();
+            const year = date.getFullYear();
+            
+            // Get paydays from localStorage
+            const paydays = JSON.parse(localStorage.getItem('paydays') || '{}');
+            
+            // Create month key
+            const monthKey = `${year}-${month}`;
+            
+            // Initialize month if it doesn't exist
+            if (!paydays[monthKey]) {
+                paydays[monthKey] = {};
+            }
+            
+            // Add payday to the storage
+            paydays[monthKey][day] = {
+                amount: paydayAmount,
+                note: paydayNote,
+                date: paydayDate
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('paydays', JSON.stringify(paydays));
+            
+            // Refresh calendar
+            refreshCalendar();
+            
+            // Update income display
+            updateIncomeDisplay();
+            updateBudgetSummary();
+            
+            // Clear form
+            clearPaydayForm();
+            
+            console.log('Payday added:', paydays[monthKey][day]);
+            showSaveNotification('Payday added successfully!');
+        }
+        
+        // Function to update an existing payday
+        function updatePayday() {
+            const paydayDate = document.getElementById('payday-date').value;
+            const paydayAmount = parseFloat(document.getElementById('payday-amount').value);
+            const paydayNote = document.getElementById('payday-note').value.trim();
+            
+            if (!paydayDate || isNaN(paydayAmount) || paydayAmount <= 0) {
+                alert('Please enter a valid date and amount.');
+                return;
+            }
+            
+            const date = new Date(paydayDate);
+            const day = date.getDate();
+            const month = date.getMonth();
+            const year = date.getFullYear();
+            
+            // Get paydays from localStorage
+            const paydays = JSON.parse(localStorage.getItem('paydays') || '{}');
+            
+            // Create month key
+            const monthKey = `${year}-${month}`;
+            
+            // Check if this payday exists
+            if (!paydays[monthKey] || !paydays[monthKey][day]) {
+                alert('No payday found to update.');
+                return;
+            }
+            
+            // Update payday
+            paydays[monthKey][day] = {
+                amount: paydayAmount,
+                note: paydayNote,
+                date: paydayDate
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('paydays', JSON.stringify(paydays));
+            
+            // Refresh calendar
+            refreshCalendar();
+            
+            // Update income display
+            updateIncomeDisplay();
+            updateBudgetSummary();
+            
+            // Clear form
+            clearPaydayForm();
+            
+            console.log('Payday updated:', paydays[monthKey][day]);
+            showSaveNotification('Payday updated successfully!');
+        }
+        
+        // Function to remove a payday
+        function removePayday() {
+            const paydayDate = document.getElementById('payday-date').value;
+            
+            if (!paydayDate) {
+                alert('Please select a date with a payday to remove.');
+                return;
+            }
+            
+            const date = new Date(paydayDate);
+            const day = date.getDate();
+            const month = date.getMonth();
+            const year = date.getFullYear();
+            
+            // Get paydays from localStorage
+            const paydays = JSON.parse(localStorage.getItem('paydays') || '{}');
+            
+            // Create month key
+            const monthKey = `${year}-${month}`;
+            
+            // Check if this payday exists
+            if (!paydays[monthKey] || !paydays[monthKey][day]) {
+                alert('No payday found to remove.');
+                return;
+            }
+            
+            // Confirm deletion
+            if (confirm('Are you sure you want to remove this payday?')) {
+                // Remove payday
+                delete paydays[monthKey][day];
+                
+                // Remove month if empty
+                if (Object.keys(paydays[monthKey]).length === 0) {
+                    delete paydays[monthKey];
+                }
+                
+                // Save to localStorage
+                localStorage.setItem('paydays', JSON.stringify(paydays));
+                
+                // Refresh calendar
+                refreshCalendar();
+                
+                // Update income display
+                updateIncomeDisplay();
+                updateBudgetSummary();
+                
+                // Clear form
+                clearPaydayForm();
+                
+                console.log('Payday removed from', monthKey, day);
+                showSaveNotification('Payday removed successfully!');
+            }
+        }
+        
+        // Function to add an AISH payment
+        function addAishPayment() {
+            const paymentDate = document.getElementById('aish-payment-date').value;
+            const paymentAmount = parseFloat(document.getElementById('aish-payment-amount').value);
+            
+            if (!paymentDate || isNaN(paymentAmount) || paymentAmount <= 0) {
+                alert('Please enter a valid date and amount.');
+                return;
+            }
+            
+            const date = new Date(paymentDate);
+            const day = date.getDate();
+            const month = date.getMonth();
+            const year = date.getFullYear();
+            
+            // Get AISH payments from localStorage
+            const aishPayments = JSON.parse(localStorage.getItem('aishPayments') || '{}');
+            
+            // Create month key
+            const monthKey = `${year}-${month}`;
+            
+            // Initialize month if it doesn't exist
+            if (!aishPayments[monthKey]) {
+                aishPayments[monthKey] = {};
+            }
+            
+            // Add payment to the storage
+            aishPayments[monthKey][day] = {
+                amount: paymentAmount,
+                date: paymentDate
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('aishPayments', JSON.stringify(aishPayments));
+            
+            // Refresh calendar
+            refreshCalendar();
+            
+            // Update income display
+            updateIncomeDisplay();
+            updateBudgetSummary();
+            
+            // Clear form
+            clearAishForm();
+            
+            console.log('AISH payment added:', aishPayments[monthKey][day]);
+            showSaveNotification('AISH payment added successfully!');
+        }
+        
+        // Function to update an AISH payment
+        function updateAishPayment() {
+            const paymentDate = document.getElementById('aish-payment-date').value;
+            const paymentAmount = parseFloat(document.getElementById('aish-payment-amount').value);
+            
+            if (!paymentDate || isNaN(paymentAmount) || paymentAmount <= 0) {
+                alert('Please enter a valid date and amount.');
+                return;
+            }
+            
+            const date = new Date(paymentDate);
+            const day = date.getDate();
+            const month = date.getMonth();
+            const year = date.getFullYear();
+            
+            // Get AISH payments from localStorage
+            const aishPayments = JSON.parse(localStorage.getItem('aishPayments') || '{}');
+            
+            // Create month key
+            const monthKey = `${year}-${month}`;
+            
+            // Check if this payment exists
+            if (!aishPayments[monthKey] || !aishPayments[monthKey][day]) {
+                alert('No AISH payment found to update.');
+                return;
+            }
+            
+            // Update payment
+            aishPayments[monthKey][day] = {
+                amount: paymentAmount,
+                date: paymentDate
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('aishPayments', JSON.stringify(aishPayments));
+            
+            // Refresh calendar
+            refreshCalendar();
+            
+            // Update income display
+            updateIncomeDisplay();
+            updateBudgetSummary();
+            
+            // Clear form
+            clearAishForm();
+            
+            console.log('AISH payment updated:', aishPayments[monthKey][day]);
+            showSaveNotification('AISH payment updated successfully!');
+        }
+        
+        // Function to remove an AISH payment
+        function removeAishPayment() {
+            const paymentDate = document.getElementById('aish-payment-date').value;
+            
+            if (!paymentDate) {
+                alert('Please select a date with an AISH payment to remove.');
+                return;
+            }
+            
+            const date = new Date(paymentDate);
+            const day = date.getDate();
+            const month = date.getMonth();
+            const year = date.getFullYear();
+            
+            // Get AISH payments from localStorage
+            const aishPayments = JSON.parse(localStorage.getItem('aishPayments') || '{}');
+            
+            // Create month key
+            const monthKey = `${year}-${month}`;
+            
+            // Check if this payment exists
+            if (!aishPayments[monthKey] || !aishPayments[monthKey][day]) {
+                alert('No AISH payment found to remove.');
+                return;
+            }
+            
+            // Confirm deletion
+            if (confirm('Are you sure you want to remove this AISH payment?')) {
+                // Remove payment
+                delete aishPayments[monthKey][day];
+                
+                // Remove month if empty
+                if (Object.keys(aishPayments[monthKey]).length === 0) {
+                    delete aishPayments[monthKey];
+                }
+                
+                // Save to localStorage
+                localStorage.setItem('aishPayments', JSON.stringify(aishPayments));
+                
+                // Refresh calendar
+                refreshCalendar();
+                
+                // Update income display
+                updateIncomeDisplay();
+                updateBudgetSummary();
+                
+                // Clear form
+                clearAishForm();
+                
+                console.log('AISH payment removed from', monthKey, day);
+                showSaveNotification('AISH payment removed successfully!');
+            }
+        }
+        
+        // Function to show save notification
+        function showSaveNotification(message, duration = 2000) {
+            // Check if notification element exists, if not create it
+            let notification = document.getElementById('save-notification');
+            if (!notification) {
+                notification = document.createElement('div');
+                notification.id = 'save-notification';
+                notification.className = 'save-notification';
+                notification.style.position = 'fixed';
+                notification.style.bottom = '20px';
+                notification.style.right = '20px';
+                notification.style.backgroundColor = '#4caf50';
+                notification.style.color = 'white';
+                notification.style.padding = '12px 20px';
+                notification.style.borderRadius = '4px';
+                notification.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+                notification.style.zIndex = '1000';
+                notification.style.transform = 'translateY(100px)';
+                notification.style.opacity = '0';
+                notification.style.transition = 'transform 0.3s, opacity 0.3s';
+                document.body.appendChild(notification);
+            }
+            
+            // Set message and show
+            notification.textContent = message || 'Data saved';
+            notification.style.transform = 'translateY(0)';
+            notification.style.opacity = '1';
+            
+            // Hide after duration
+            setTimeout(() => {
+                notification.style.transform = 'translateY(100px)';
+                notification.style.opacity = '0';
+            }, duration);
+        }
+        
+        // Helper function to get text description of recurrence
+        function getRecurrenceText(recurrence) {
+            const recurrenceTexts = {
+                'weekly': 'Weekly',
+                'biweekly': 'Bi-weekly',
+                'monthly': 'Monthly',
+                'quarterly': 'Every 3 months',
+                'yearly': 'Yearly',
+                'none': 'One-time'
+            };
+            return recurrenceTexts[recurrence] || 'One-time';
+        }
+        
+        // Function to calculate recurring dates based on the original date and recurrence pattern
+        function calculateRecurringDates(originalDate, recurrence, targetMonth, targetYear) {
+            console.log("Calculating recurring dates for:", originalDate, "with recurrence:", recurrence);
+            
+            // If not a recurring expense, only return the original date if it's in the target month/year
+            if (!recurrence || recurrence === 'none') {
+                if (originalDate.getMonth() === targetMonth && originalDate.getFullYear() === targetYear) {
+                    return [originalDate];
+                } else {
+                    return [];
+                }
+            }
+            
+            const result = [];
+            
+            // Get the original day of month (1-31)
+            const originalDay = originalDate.getDate();
+            const originalMonth = originalDate.getMonth();
+            const originalYear = originalDate.getFullYear();
+            
+            // Handle different recurrence patterns
+            switch (recurrence) {
+                case 'weekly':
+                    // Weekly recurrence - find all instances in the target month
+                    const firstDayOfMonth = new Date(targetYear, targetMonth, 1);
+                    const lastDayOfMonth = new Date(targetYear, targetMonth + 1, 0);
+                    
+                    // Get the day of week from original date (0-6, Sunday-Saturday)
+                    const dayOfWeek = originalDate.getDay();
+                    
+                    // Find the first matching day in the target month
+                    let currentDate = new Date(firstDayOfMonth);
+                    while (currentDate.getDay() !== dayOfWeek) {
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                    
+                    // Add all weekly occurrences in this month
+                    while (currentDate <= lastDayOfMonth) {
+                        result.push(new Date(currentDate));
+                        // Add 7 days for next occurrence
+                        currentDate.setDate(currentDate.getDate() + 7);
+                    }
+                    break;
+                    
+                case 'biweekly':
+                    // Bi-weekly recurrence - every two weeks from original date
+                    // First, determine a reference date to calculate from
+                    const biweeklyReference = new Date(originalDate);
+                    
+                    // Calculate all bi-weekly dates in theory, going back to the past if needed
+                    const biweeklyFirstDay = new Date(targetYear, targetMonth, 1);
+                    const biweeklyLastDay = new Date(targetYear, targetMonth + 1, 0);
+                    
+                    // Go back in time until we're before the target month
+                    let refDate = new Date(originalDate);
+                    while (refDate > biweeklyFirstDay) {
+                        refDate.setDate(refDate.getDate() - 14);
+                    }
+                    
+                    // Now move forward in 2-week increments until we pass the month
+                    while (refDate <= biweeklyLastDay) {
+                        if (refDate >= biweeklyFirstDay) {
+                            result.push(new Date(refDate));
+                        }
+                        refDate.setDate(refDate.getDate() + 14);
+                    }
+                    break;
+                    
+                case 'monthly':
+                    // Monthly recurrence - same day each month
+                    // Handle the case where the day is 29th, 30th, or 31st
+                    // which might not exist in the target month
+                    
+                    // Check if the target month is the current month or a future month
+                    if (targetYear > originalYear || 
+                        (targetYear === originalYear && targetMonth >= originalMonth)) {
+                        
+                        // The target month-year is on or after the start date
+                        
+                        // Calculate days in the target month
+                        const daysInTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+                        
+                        // Determine what day to use (handle months with fewer days)
+                        let dayToUse = originalDay;
+                        if (originalDay > daysInTargetMonth) {
+                            dayToUse = daysInTargetMonth;
+                        }
+                        
+                        // Ensure we're using a valid date (avoid day 0)
+                        if (dayToUse < 1) dayToUse = 1;
+                        
+                        // Create the recurring date for this month
+                        result.push(new Date(targetYear, targetMonth, dayToUse));
+                    }
+                    break;
+                    
+                case 'quarterly':
+                    // Quarterly recurrence - every 3 months
+                    // Check if the target month is one of the quarterly months
+                    const startMonth = originalMonth;
+                    
+                    // Calculate all quarters from the original date
+                    for (let i = 0; i < 4; i++) {
+                        const quarterMonth = (startMonth + i * 3) % 12;
+                        const quarterYear = targetYear + Math.floor((startMonth + i * 3) / 12);
+                        
+                        if (quarterMonth === targetMonth && quarterYear === targetYear) {
+                            // This quarter is in the target month/year
+                            // Adjust for days in month (handle 29th, 30th, 31st)
+                            const daysInTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+                            let dayToUse = originalDay <= daysInTargetMonth ? originalDay : daysInTargetMonth;
+                            
+                            result.push(new Date(targetYear, targetMonth, dayToUse));
+                            break;
+                        }
+                    }
+                    break;
+                    
+                case 'yearly':
+                    // Yearly recurrence - same day and month each year
+                    if (originalMonth === targetMonth && targetYear >= originalYear) {
+                        // Get days in the target month (handle leap years)
+                        const daysInTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+                        let dayToUse = originalDay <= daysInTargetMonth ? originalDay : daysInTargetMonth;
+                        
+                        result.push(new Date(targetYear, targetMonth, dayToUse));
+                    }
+                    break;
+            }
+            
+            console.log("Recurring dates calculated:", result);
+            return result;
+        }
+        
+        // Function to change month in the calendar
+        function changeMonth(delta) {
+            console.log("Changing month by:", delta);
+            
+            // Get current month and year from display
+            const currentMonthDisplay = document.getElementById('current-month-display').textContent;
+            const [monthName, year] = currentMonthDisplay.split(' ');
+            
+            // Convert month name to number
+            const currentMonth = getMonthNumber(monthName);
+            const currentYear = parseInt(year);
+            
+            if (isNaN(currentMonth) || isNaN(currentYear)) {
+                console.error("Invalid month or year:", monthName, year);
+                return;
+            }
+            
+            console.log("Current month/year:", monthName, currentYear, "(month index:", currentMonth, ")");
+            
+            // Calculate the new month and year
+            let newMonth = currentMonth + delta;
+            let newYear = currentYear;
+            
+            // Handle month overflow/underflow
+            if (newMonth > 11) {
+                newMonth = 0;
+                newYear += 1;
+            } else if (newMonth < 0) {
+                newMonth = 11;
+                newYear -= 1;
+            }
+            
+            console.log("New month/year:", getMonthName(newMonth), newYear, "(month index:", newMonth, ")");
+            
+            // Update the month display
+            document.getElementById('current-month-display').textContent = 
+                `${getMonthName(newMonth)} ${newYear}`;
+            
+            // Regenerate the calendar
+            generateCalendar();
+        }
+        
+        // Function to force refresh the calendar
+        function refreshCalendar() {
+            console.log("Refreshing calendar");
+            // Use the simplified calendar generation function
+            generateSimpleCalendar();
+        }
+        
+        // Simplified calendar generation - focus on making dates visible
+        function generateSimpleCalendar() {
+            console.log("Generating simplified calendar");
+            
+            // Get the calendar container
+            const calendarContainer = document.getElementById('calendar-container');
+            if (!calendarContainer) {
+                console.error("Could not find calendar container");
+                return;
+            }
+            
+            // Get the current month and year
+            const currentMonthDisplay = document.getElementById('current-month-display').textContent;
+            const [monthName, yearStr] = currentMonthDisplay.split(' ');
+            const currentMonth = getMonthNumber(monthName);
+            const currentYear = parseInt(yearStr);
+            
+            if (isNaN(currentMonth) || isNaN(currentYear)) {
+                console.error("Invalid month/year:", monthName, yearStr);
+                const now = new Date();
+                document.getElementById('current-month-display').textContent = 
+                    `${getMonthName(now.getMonth())} ${now.getFullYear()}`;
+                setTimeout(generateSimpleCalendar, 0);
+                return;
+            }
+            
+            console.log("Generating calendar for", monthName, currentYear);
+            
+            // Create a completely new calendar
+            const calendarElement = document.createElement('div');
+            calendarElement.className = 'calendar';
+            calendarElement.innerHTML = `
+                <div class="calendar-days">
+                    <div>Sun</div>
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div>Sat</div>
+                </div>
+                <div class="calendar-dates" id="calendar-dates"></div>
+            `;
+            
+            // Replace the entire calendar content
+            calendarContainer.innerHTML = '';
+            calendarContainer.appendChild(calendarElement);
+            
+            // Get a fresh reference to calendar-dates
+            const calendarDates = document.getElementById('calendar-dates');
+            
+            // Get first day of month and number of days
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const prevMonthDays = new Date(currentYear, currentMonth, 0).getDate();
+            
+            console.log("First day:", firstDay, "Days in month:", daysInMonth);
+            
+            // Create HTML for the calendar
+            let calendarHTML = '';
+            let dayCount = 1;
+            let nextMonthDay = 1;
+            
+            // Create HTML for up to 6 rows
+            for (let i = 0; i < 6; i++) {
+                // Stop if we've already displayed all days for this month
+                if (dayCount > daysInMonth && i > 0) break;
+                
+                calendarHTML += '<div class="calendar-row">';
+                
+                // Create 7 cells for each day of the week
+                for (let j = 0; j < 7; j++) {
+                    if (i === 0 && j < firstDay) {
+                        // Previous month days
+                        const prevDay = prevMonthDays - (firstDay - j - 1);
+                        calendarHTML += `<div class="calendar-date prev-month" data-date="${prevDay}">${prevDay}</div>`;
+                    } else if (dayCount > daysInMonth) {
+                        // Next month days
+                        calendarHTML += `<div class="calendar-date next-month" data-date="${nextMonthDay}">${nextMonthDay}</div>`;
+                        nextMonthDay++;
+                    } else {
+                        // Current month days
+                        const now = new Date();
+                        const isToday = dayCount === now.getDate() && 
+                                      currentMonth === now.getMonth() && 
+                                      currentYear === now.getFullYear();
+                        
+                        const todayClass = isToday ? ' today' : '';
+                        calendarHTML += `<div class="calendar-date current-month${todayClass}" 
+                                             data-date="${dayCount}" 
+                                             data-month="${currentMonth}" 
+                                             data-year="${currentYear}">${dayCount}</div>`;
+                        dayCount++;
+                    }
+                }
+                
+                calendarHTML += '</div>';
+            }
+            
+            // Set the calendar HTML
+            calendarDates.innerHTML = calendarHTML;
+            
+            // Add click events to the dates
+            document.querySelectorAll('.calendar-date').forEach(date => {
+                date.addEventListener('click', function() {
+                    selectCalendarDate(this);
+                });
+            });
+            
+            // Apply direct styles to make sure calendar is visible
+            calendarDates.style.display = 'flex';
+            calendarDates.style.flexDirection = 'column';
+            calendarDates.style.border = '1px solid #ddd';
+            calendarDates.style.minHeight = '300px';
+            
+            document.querySelectorAll('.calendar-row').forEach(row => {
+                row.style.display = 'grid';
+                row.style.gridTemplateColumns = 'repeat(7, 1fr)';
+                row.style.border = '1px solid #eee';
+                row.style.minHeight = '50px';
+            });
+            
+            document.querySelectorAll('.calendar-date').forEach(cell => {
+                cell.style.padding = '5px';
+                cell.style.border = '1px solid #e0e0e0';
+                cell.style.minHeight = '40px';
+                cell.style.position = 'relative';
+            });
+            
+            // Load the calendar events
+            setTimeout(() => {
+                try {
+                    loadCalendarEvents();
+                } catch (error) {
+                    console.error("Error loading calendar events:", error);
+                }
+            }, 100);
+            
+            console.log("Calendar generation complete");
+        }
+    </script>
+</body>
+</html> 

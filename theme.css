@@ -1,0 +1,600 @@
+/* AISH Calculator Professional Theme
+ * A modern, responsive theme for the AISH Calculator application
+ */
+
+:root {
+    /* Primary Color Palette */
+    --primary: #3949ab;        /* Indigo 600 - Main brand color */
+    --primary-light: #6f74dd;  /* Lighter shade for hover states */
+    --primary-dark: #00227b;   /* Darker shade for active states */
+    
+    /* Accent Colors */
+    --accent: #26a69a;         /* Teal 400 - Secondary actions */
+    --accent-light: #64d8cb;   /* Lighter teal */
+    --accent-dark: #00766c;    /* Darker teal */
+    
+    /* Functional Colors */
+    --success: #4caf50;        /* Green - Positive actions/status */
+    --warning: #ff9800;        /* Orange - Warning/attention */
+    --danger: #f44336;         /* Red - Danger/deletion */
+    --info: #2196f3;           /* Blue - Information */
+    
+    /* Neutrals */
+    --background: #f5f7fa;     /* Light grey blue - Page background */
+    --surface: #ffffff;        /* White - Card/section backgrounds */
+    --border: #e0e0e0;         /* Light grey - Borders */
+    
+    /* Text Colors */
+    --text-primary: #263238;   /* Dark blue grey - Primary text */
+    --text-secondary: #546e7a; /* Medium blue grey - Secondary text */
+    --text-tertiary: #78909c;  /* Light blue grey - Subtle text */
+    --text-on-dark: #ffffff;   /* White - Text on dark backgrounds */
+    
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    --shadow-md: 0 3px 6px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.12);
+    --shadow-lg: 0 10px 20px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.10);
+    
+    /* Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.25s ease;
+}
+
+/* Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Roboto', 'Segoe UI', sans-serif;
+    background-color: var(--background);
+    color: var(--text-primary);
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--primary-dark);
+    font-weight: 500;
+    line-height: 1.3;
+    margin-bottom: var(--spacing-md);
+}
+
+h1 {
+    font-size: 2rem;
+}
+
+h2 {
+    font-size: 1.75rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+h4 {
+    font-size: 1.25rem;
+}
+
+h5 {
+    font-size: 1.1rem;
+}
+
+h6 {
+    font-size: 1rem;
+}
+
+p {
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+}
+
+a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+a:hover {
+    color: var(--primary-light);
+    text-decoration: underline;
+}
+
+/* Header */
+header {
+    background-color: var(--primary);
+    color: var(--text-on-dark);
+    padding: var(--spacing-md) 0;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    z-index: 10;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo h1 {
+    color: var(--text-on-dark);
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 500;
+}
+
+.logo span {
+    font-weight: 300;
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+/* Navigation */
+nav ul {
+    display: flex;
+    list-style: none;
+    gap: var(--spacing-md);
+}
+
+nav a {
+    color: var(--text-on-dark);
+    text-decoration: none;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
+    display: inline-block;
+    font-weight: 500;
+}
+
+nav a:hover {
+    background-color: var(--primary-dark);
+    text-decoration: none;
+    color: var(--text-on-dark);
+}
+
+nav a.active {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Cards */
+.card {
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    margin-bottom: var(--spacing-lg);
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.card-header {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background-color: var(--primary);
+    color: var(--text-on-dark);
+}
+
+.card-header h2, 
+.card-header h3, 
+.card-header h4 {
+    color: var(--text-on-dark);
+    margin: 0;
+}
+
+.card-content {
+    padding: var(--spacing-lg);
+}
+
+/* Buttons */
+.btn {
+    background-color: var(--primary);
+    color: var(--text-on-dark);
+    border: none;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+    display: inline-block;
+    text-decoration: none;
+    line-height: 1.5;
+}
+
+.btn:hover {
+    background-color: var(--primary-light);
+    transform: translateY(-1px);
+    text-decoration: none;
+    color: var(--text-on-dark);
+}
+
+.btn:active {
+    background-color: var(--primary-dark);
+    transform: translateY(1px);
+}
+
+.btn-secondary {
+    background-color: var(--accent);
+}
+
+.btn-secondary:hover {
+    background-color: var(--accent-light);
+}
+
+.btn-secondary:active {
+    background-color: var(--accent-dark);
+}
+
+.btn-success {
+    background-color: var(--success);
+}
+
+.btn-warning {
+    background-color: var(--warning);
+}
+
+.btn-danger {
+    background-color: var(--danger);
+}
+
+.btn-info {
+    background-color: var(--info);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+.btn-outline:hover {
+    background-color: var(--primary);
+    color: var(--text-on-dark);
+}
+
+/* Form Elements */
+label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: var(--spacing-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    color: var(--text-primary);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    background-color: var(--surface);
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.1);
+}
+
+.form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Calendar Specific */
+.calendar {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background-color: var(--surface);
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background-color: var(--primary-light);
+    color: var(--text-on-dark);
+}
+
+.calendar-days div {
+    text-align: center;
+    padding: var(--spacing-md);
+    font-weight: 500;
+}
+
+.calendar-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-bottom: 1px solid var(--border);
+}
+
+.calendar-row:last-child {
+    border-bottom: none;
+}
+
+.calendar-date {
+    position: relative;
+    height: 80px;
+    padding: var(--spacing-sm);
+    border-right: 1px solid var(--border);
+    text-align: right;
+    transition: background-color var(--transition-fast);
+}
+
+.calendar-date:last-child {
+    border-right: none;
+}
+
+.calendar-date.current-month {
+    cursor: pointer;
+}
+
+.calendar-date.current-month:hover {
+    background-color: rgba(57, 73, 171, 0.05);
+}
+
+.calendar-date.today {
+    background-color: rgba(57, 73, 171, 0.1);
+    font-weight: bold;
+}
+
+.calendar-date.selected {
+    background-color: rgba(57, 73, 171, 0.15);
+    box-shadow: inset 0 0 0 2px var(--primary);
+}
+
+.prev-month, .next-month {
+    color: var(--text-tertiary);
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Event indicators */
+.event-indicator {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.event-indicator.payday {
+    top: 5px;
+    left: 5px;
+    background-color: rgba(76, 175, 80, 0.2);
+}
+
+.event-indicator.aish {
+    top: 5px;
+    left: 34px;
+    background-color: rgba(155, 89, 182, 0.2);
+}
+
+.event-indicator.bill {
+    top: 34px;
+    left: 5px;
+    background-color: rgba(255, 152, 0, 0.2);
+}
+
+/* Month selector */
+.month-selector {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm) 0;
+}
+
+#current-month-display {
+    font-weight: 500;
+    color: var(--primary-dark);
+    font-size: 1.1rem;
+}
+
+/* Summary & Data Display */
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: var(--spacing-sm);
+}
+
+.summary-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.summary-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.summary-value {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.summary-value.positive {
+    color: var(--success);
+}
+
+.summary-value.negative {
+    color: var(--danger);
+}
+
+.summary-value.warning {
+    color: var(--warning);
+}
+
+/* Expense items */
+.expense-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border);
+    transition: background-color var(--transition-fast);
+}
+
+.expense-item:last-child {
+    border-bottom: none;
+}
+
+.expense-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.expense-name {
+    font-weight: 500;
+}
+
+.expense-category {
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+}
+
+.expense-amount {
+    font-weight: 700;
+    color: var(--danger);
+}
+
+.expense-actions {
+    margin-left: var(--spacing-md);
+}
+
+.expense-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-tertiary);
+    margin-left: var(--spacing-xs);
+    font-size: 1.2rem;
+    transition: color var(--transition-fast);
+}
+
+.expense-btn:hover {
+    color: var(--primary);
+}
+
+.delete-btn:hover {
+    color: var(--danger);
+}
+
+/* Notifications */
+.save-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--primary);
+    color: var(--text-on-dark);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: transform var(--transition-normal), opacity var(--transition-normal);
+    z-index: 1000;
+}
+
+.save-notification.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding: var(--spacing-sm);
+    }
+    
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    nav {
+        margin-top: var(--spacing-sm);
+    }
+    
+    nav ul {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .card-content {
+        padding: var(--spacing-md);
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .calendar-date {
+        height: 60px;
+        font-size: 0.9rem;
+    }
+    
+    .event-indicator {
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+    }
+}
+
+/* Print styles */
+@media print {
+    body {
+        background-color: white;
+        color: black;
+    }
+    
+    header, 
+    .btn, 
+    .card-header {
+        background-color: white !important;
+        color: black !important;
+        box-shadow: none !important;
+        border: 1px solid #ddd;
+    }
+    
+    .card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    /* Hide non-printable elements */
+    .no-print {
+        display: none !important;
+    }
+} 
