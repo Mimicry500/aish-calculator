@@ -430,7 +430,67 @@ document.addEventListener('DOMContentLoaded', function() {
         const formattedDay = day.toString().padStart(2, '0');
         const formattedDate = `${year}-${formattedMonth}-${formattedDay}`;
         
-        // Show the payday form
+        // Show selection dialog with options for payday or AISH payment
+        const selectionType = prompt("What would you like to add for this date?\n1. Payday\n2. AISH Payment\n\nEnter 1 or 2 (or cancel to just select the date):");
+        
+        if (selectionType === "1") {
+            // Show the payday form
+            showPaydayForm(formattedDate, day, month, year);
+        } else if (selectionType === "2") {
+            // Set the AISH payment date
+            const aishDateInput = document.getElementById('aish-date');
+            if (aishDateInput) {
+                aishDateInput.value = formattedDate;
+                
+                // Scroll to the AISH payment section
+                const aishSection = document.querySelector('.calculator-card:nth-of-type(3)');
+                if (aishSection) {
+                    aishSection.scrollIntoView({ behavior: 'smooth' });
+                }
+                
+                // Focus on the amount input
+                const aishAmountInput = document.getElementById('aish-amount');
+                if (aishAmountInput) {
+                    setTimeout(() => aishAmountInput.focus(), 500);
+                }
+            }
+        } else {
+            // Just select the date without showing forms
+            // Check if there's an existing payday or AISH payment on this date
+            const paydays = JSON.parse(localStorage.getItem('paydays') || '{}');
+            const aishPayments = JSON.parse(localStorage.getItem('aishPayments') || '{}');
+            
+            const monthKey = `${year}-${month}`;
+            const existingPayday = paydays[monthKey] && paydays[monthKey][day];
+            const existingAishPayment = aishPayments[monthKey] && aishPayments[monthKey][day];
+            
+            // Show info about the selected date
+            let message = `Selected date: ${formattedMonth}/${formattedDay}/${year}\n\n`;
+            
+            if (existingPayday) {
+                message += `Payday: ${formatCurrency(existingPayday.amount)}\n`;
+                if (existingPayday.note) message += `Note: ${existingPayday.note}\n`;
+            }
+            
+            if (existingAishPayment) {
+                message += `\nAISH Payment: ${formatCurrency(existingAishPayment.amount)}\n`;
+                if (existingAishPayment.expected) {
+                    message += `Expected: ${formatCurrency(existingAishPayment.expected)}\n`;
+                    message += `Adjustment: ${formatCurrency(existingAishPayment.adjustment)}\n`;
+                }
+                if (existingAishPayment.notes) message += `Notes: ${existingAishPayment.notes}\n`;
+            }
+            
+            if (!existingPayday && !existingAishPayment) {
+                message += "No payments recorded for this date.";
+            }
+            
+            alert(message);
+        }
+    }
+    
+    // Helper function to show payday form
+    function showPaydayForm(formattedDate, day, month, year) {
         const paydayForm = document.getElementById('payday-form');
         if (paydayForm) {
             paydayForm.style.display = 'block';
@@ -468,12 +528,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Clear form fields
                 if (paydayAmountInput) paydayAmountInput.value = '';
                 if (paydayNoteInput) paydayNoteInput.value = '';
-            }
-            
-            // Also set the AISH payment date if that form exists
-            const aishDateInput = document.getElementById('aish-date');
-            if (aishDateInput) {
-                aishDateInput.value = formattedDate;
             }
         }
     }
@@ -795,7 +849,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const month = parseInt(monthStr) - 1; // Adjust month (0-based in JS)
         const day = parseInt(dayStr);
         
-        console.log("REMOVING PAYDAY:", day, month, year);
+        console.log("Removing payday:", day, month, year);
         
         // Get current state
         const monthDisplay = document.getElementById('current-month-display');
@@ -835,7 +889,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (paydayIndicator) {
                     paydayIndicator.innerHTML = '';
                     paydayIndicator.textContent = '';
-                    paydayIndicator.classList.remove('has-payday');
                     console.log("Cleared payday indicator element");
                 }
                 
@@ -854,52 +907,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error("Error during direct DOM clearing:", e);
             }
             
-            // FAILSAFE: Completely regenerate calendar after a short delay
-            setTimeout(() => {
-                try {
-                    // Save current month display
-                    const currentMonthDisplay = document.getElementById('current-month-display').textContent;
-                    
-                    // Clear and rebuild calendar
-                    calendarContainer.innerHTML = '';
-                    generateCalendar();
-                    
-                    // Verify month matches what we had before
-                    const newMonthDisplay = document.getElementById('current-month-display').textContent;
-                    if (newMonthDisplay !== currentMonthDisplay) {
-                        console.log("Adjusting month after regeneration");
-                        // If it doesn't match, try to correct by changing months
-                        const [targetMonth, targetYear] = currentMonthDisplay.split(' ');
-                        const [currentMonth, currentYear] = newMonthDisplay.split(' ');
-                        
-                        // Find the difference in months
-                        const targetMonthNum = getMonthNumber(targetMonth);
-                        const currentMonthNum = getMonthNumber(currentMonth);
-                        const targetYearNum = parseInt(targetYear);
-                        const currentYearNum = parseInt(currentYear);
-                        
-                        const monthDiff = (targetYearNum - currentYearNum) * 12 + (targetMonthNum - currentMonthNum);
-                        
-                        // Adjust to the target month
-                        for (let i = 0; i < Math.abs(monthDiff); i++) {
-                            changeMonth(Math.sign(monthDiff));
-                        }
-                    }
-                } catch (e) {
-                    console.error("Error during failsafe calendar regeneration:", e);
-                }
-            }, 200);
-            
             // Update reporting period summary
             updateReportingPeriodSummary();
             
-            // Clear form
-            clearSelection();
+            // Clear form but keep the calendar visible
+            clearPaydayForm();
             
-            // Delay the alert slightly to allow the DOM to update
-            setTimeout(() => {
-                alert(`Payday removed from ${currentMonthName} ${day}, ${currentYear}`);
-            }, 100);
+            // Hide the payday form but keep the calendar visible
+            const paydayForm = document.getElementById('payday-form');
+            if (paydayForm) {
+                paydayForm.style.display = 'none';
+            }
+            
+            // Make sure calendar container is visible
+            const calendarContainer = document.getElementById('calendar-container');
+            if (calendarContainer) {
+                calendarContainer.style.display = 'block';
+                calendarContainer.style.visibility = 'visible';
+            }
+            
+            // Show notification
+            showSaveNotification(`Payday removed from ${currentMonthName} ${day}, ${currentYear}`);
         } else {
             alert(`No payday found on ${currentMonthName} ${day}, ${currentYear}`);
         }
@@ -1136,13 +1164,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Function to add AISH payment
     function addAishPayment() {
-        const paymentDate = document.getElementById('aish-payment-date').value;
-        const paymentAmount = parseFloat(document.getElementById('aish-payment-amount').value) || 0;
+        const paymentDate = document.getElementById('aish-date').value;
+        const paymentAmount = parseFloat(document.getElementById('aish-amount').value) || 0;
+        const paymentNotes = document.getElementById('aish-notes') ? document.getElementById('aish-notes').value : '';
         
         if (!paymentDate || paymentAmount <= 0) {
-            alert('Please enter a valid date and amount');
+            alert('Please enter a valid date and amount for the AISH payment');
             return;
         }
+        
+        console.log("Adding AISH payment:", paymentDate, paymentAmount);
         
         // Fix: Use the input date parts directly to avoid timezone issues
         const [yearStr, monthStr, dayStr] = paymentDate.split('-');
@@ -1150,7 +1181,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const month = parseInt(monthStr) - 1; // Adjust month (0-based in JS)
         const day = parseInt(dayStr);
         
-        console.log("DEBUG: Trying to add AISH payment", {year, month, day, paymentAmount});
+        console.log("Parsed date components:", year, month, day);
         
         // Calculate expected AISH payment for this period
         const expectedPayment = calculateExpectedAISHPayment(month, year);
@@ -1162,8 +1193,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const aishPayments = JSON.parse(localStorage.getItem('aishPayments') || '{}');
         const monthKey = `${year}-${month}`;
         
-        console.log("DEBUG: Using month key", monthKey);
-        
         if (!aishPayments[monthKey]) {
             aishPayments[monthKey] = {};
         }
@@ -1172,13 +1201,13 @@ document.addEventListener('DOMContentLoaded', function() {
             amount: paymentAmount,
             date: paymentDate,
             expected: expectedPayment,
-            adjustment: paymentDifference
+            adjustment: paymentDifference,
+            notes: paymentNotes
         };
         
         // Save to localStorage
         localStorage.setItem('aishPayments', JSON.stringify(aishPayments));
         localStorage.setItem('aishPayments_backup', JSON.stringify(aishPayments));
-        console.log("DEBUG: Saved AISH payments to localStorage", aishPayments);
         
         // Show the per-payment adjustment
         const adjustmentInfo = document.getElementById('per-payment-adjustment');
@@ -1191,8 +1220,6 @@ document.addEventListener('DOMContentLoaded', function() {
             adjustmentInfo.style.display = 'block';
         }
         
-        console.log(`Added AISH payment: ${paymentAmount}, expected: ${expectedPayment}, adjustment: ${paymentDifference}`);
-        
         // Calculate and update adjustment factor
         calculateAdjustmentFactor();
         
@@ -1202,41 +1229,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Clear form
-        document.getElementById('aish-payment-date').value = '';
-        document.getElementById('aish-payment-amount').value = '';
-        document.getElementById('remove-aish-payment-btn').disabled = true;
+        document.getElementById('aish-date').value = '';
+        document.getElementById('aish-amount').value = '';
+        if (document.getElementById('aish-notes')) {
+            document.getElementById('aish-notes').value = '';
+        }
         
-        // Update calendar to show AISH payments
+        // Update calendar immediately without requiring a refresh
         loadAishPayments();
         updateReportingPeriodSummary();
         
-        // Save AISH payments and show notification
-        saveAishPayments();
+        // Navigate to the month of the added payment if necessary
+        const currentMonthDisplay = document.getElementById('current-month-display');
+        const [currentMonthName, currentYear] = currentMonthDisplay.textContent.split(' ');
+        const currentMonth = getMonthNumber(currentMonthName);
         
-        console.log("AISH payment added:", day, month, year, paymentAmount);
+        if (month !== currentMonth || year !== parseInt(currentYear)) {
+            // Update month display
+            currentMonthDisplay.textContent = `${getMonthName(month)} ${year}`;
+            
+            // Update calendar for the new month
+            updateCalendarDates(month, year);
+        }
         
-        // Force re-render the calendar after a short delay
-        setTimeout(() => {
-            loadAishPayments();
-            
-            // Check if we need to navigate to the month of the added payment
-            const currentMonthDisplay = document.getElementById('current-month-display');
-            const [currentMonthName, currentYear] = currentMonthDisplay.textContent.split(' ');
-            const currentMonth = getMonthNumber(currentMonthName);
-            
-            // If the payment was added for a different month, offer to navigate there
-            if (month !== currentMonth || year !== parseInt(currentYear)) {
-                if (confirm(`AISH payment was added for ${getMonthName(month)} ${year}. Do you want to navigate to that month?`)) {
-                    // Update month display
-                    currentMonthDisplay.textContent = `${getMonthName(month)} ${year}`;
-                    
-                    // Update calendar for the new month
-                    updateCalendarDates(month, year);
-                }
-            }
-            
-            alert('AISH payment saved successfully!');
-        }, 200);
+        // Show confirmation
+        showSaveNotification('AISH payment added successfully');
+        
+        console.log("AISH payment added successfully:", day, month, year, paymentAmount);
     }
     
     // Calculate expected AISH payment for a given month
@@ -2403,5 +2422,132 @@ document.addEventListener('DOMContentLoaded', function() {
     function openDataPointManager() {
         // Create data point manager window
         window.open('test-storage.html', '_blank');
+    }
+
+    // Function to export all data to a text file
+    function exportDataToFile() {
+        // Collect all data from localStorage
+        const exportData = {
+            calculatorData: JSON.parse(localStorage.getItem('calculatorData') || '{}'),
+            paydays: JSON.parse(localStorage.getItem('paydays') || '{}'),
+            aishPayments: JSON.parse(localStorage.getItem('aishPayments') || '{}'),
+            adjustmentFactor: localStorage.getItem('adjustmentFactor') || '0',
+            adjustmentHistory: JSON.parse(localStorage.getItem('adjustmentHistory') || '[]'),
+            adjustmentCount: localStorage.getItem('adjustmentCount') || '0',
+            viewState: JSON.parse(localStorage.getItem('viewState') || '{}'),
+            exportDate: new Date().toISOString()
+        };
+        
+        // Convert to JSON
+        const jsonData = JSON.stringify(exportData, null, 2);
+        
+        // Create a Blob with the data
+        const blob = new Blob([jsonData], { type: 'application/json' });
+        
+        // Create a download link
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(blob);
+        
+        // Create filename with date
+        const date = new Date();
+        const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+        downloadLink.download = `aish_calculator_data_${dateStr}.json`;
+        
+        // Append to body, click it, and remove it
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        
+        // Show notification
+        showSaveNotification('Data exported to file successfully');
+    }
+    
+    // Function to import data from a file
+    function importDataFromFile() {
+        // Create a file input element
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.json';
+        
+        // Handle file selection
+        fileInput.onchange = function(e) {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        // Parse the imported data
+                        const importedData = JSON.parse(e.target.result);
+                        
+                        // Validate that it contains expected fields
+                        if (!importedData.paydays && !importedData.aishPayments) {
+                            alert('Invalid data format. Could not find paydays or AISH payments data.');
+                            return;
+                        }
+                        
+                        // Confirm before overwriting existing data
+                        if (localStorage.getItem('paydays') || localStorage.getItem('aishPayments')) {
+                            if (!confirm('This will overwrite your existing paydays and AISH payments. Continue?')) {
+                                return;
+                            }
+                        }
+                        
+                        // Import paydays if available
+                        if (importedData.paydays) {
+                            localStorage.setItem('paydays', JSON.stringify(importedData.paydays));
+                            console.log('Paydays imported:', importedData.paydays);
+                        }
+                        
+                        // Import AISH payments if available
+                        if (importedData.aishPayments) {
+                            localStorage.setItem('aishPayments', JSON.stringify(importedData.aishPayments));
+                            console.log('AISH payments imported:', importedData.aishPayments);
+                        }
+                        
+                        // Import adjustment factor and history if available
+                        if (importedData.adjustmentFactor) {
+                            localStorage.setItem('adjustmentFactor', importedData.adjustmentFactor);
+                            adjustmentFactor = parseFloat(importedData.adjustmentFactor);
+                            console.log('Adjustment factor imported:', adjustmentFactor);
+                        }
+                        
+                        if (importedData.adjustmentHistory) {
+                            localStorage.setItem('adjustmentHistory', JSON.stringify(importedData.adjustmentHistory));
+                            console.log('Adjustment history imported:', importedData.adjustmentHistory);
+                        }
+                        
+                        if (importedData.adjustmentCount) {
+                            localStorage.setItem('adjustmentCount', importedData.adjustmentCount);
+                            console.log('Adjustment count imported:', importedData.adjustmentCount);
+                        }
+                        
+                        // Refresh the calendar to show imported data
+                        refreshCalendar();
+                        
+                        // Update adjustment factor display
+                        if (document.getElementById('adjustment-factor')) {
+                            document.getElementById('adjustment-factor').value = adjustmentFactor;
+                        }
+                        
+                        // Update adjustment count display
+                        if (document.getElementById('adjustment-count')) {
+                            document.getElementById('adjustment-count').textContent = localStorage.getItem('adjustmentCount') || '0';
+                        }
+                        
+                        // Show notification
+                        showSaveNotification('Data imported from file successfully');
+                    } catch (error) {
+                        console.error('Error importing data:', error);
+                        alert('Error importing data. Make sure you selected a valid AISH calculator data file.');
+                    }
+                };
+                
+                reader.readAsText(file);
+            }
+        };
+        
+        // Trigger file selection
+        fileInput.click();
     }
 }); 
